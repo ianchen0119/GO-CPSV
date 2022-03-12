@@ -1,5 +1,7 @@
 package cpsv
 
+import "fmt"
+
 var q EventQ
 
 func eventQInit() {
@@ -7,7 +9,12 @@ func eventQInit() {
 }
 
 func (q *EventQ) pull(req *req) {
-	*req = <-q.queue
+	val, ok := <-q.queue
+	if ok {
+		*req = val
+	} else {
+		fmt.Println("No value was read.")
+	}
 }
 
 func (q *EventQ) push(req req) {

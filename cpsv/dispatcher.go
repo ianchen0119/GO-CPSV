@@ -4,20 +4,25 @@ package cpsv
 #cgo LDFLAGS: -L/usr/local/lib -lSaCkpt
 #include "go-cpsv.h"
 
-static int ckpt_write(void* data, unsigned int offset){
-	return cpsv_sync_write((char*) data, offset);
+static int ckpt_write(char* data, unsigned int offset){
+	return cpsv_sync_write(data, offset);
 }
 */
 import "C"
-import "unsafe"
+import (
+	"fmt"
+	"unsafe"
+)
 
 func Dispatcher() {
-	for true {
-		var req *req
-		q.pull(req)
-		status := int(C.ckpt_write(unsafe.Pointer(&req.data), C.uint(req.offset)))
-		if status == -1 {
-			q.push(*req)
+	for {
+		req, ok := <-q.queue
+		if ok {
+			fmt.Println("handle event from eventQ")
+			status := int(C.ckpt_write((*C.char)(unsafe.Pointer(&req.data)), C.uint(req.offset)))
+			if status == -1 {
+				q.push(req)
+			}
 		}
 	}
 }

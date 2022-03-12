@@ -56,7 +56,7 @@ func Store(sectionId string, data []byte, offset int) {
 }
 
 // load data from ckpt
-func Load(buffer []byte, offset uint32, dataSize int) {
-	C.ckpt_read(unsafe.Pointer(&buffer[0]),
+func Load(buffer *[]byte, offset uint32, dataSize int) {
+	C.ckpt_read(unsafe.Pointer(buffer),
 		C.uint(offset), C.int(dataSize))
 }
