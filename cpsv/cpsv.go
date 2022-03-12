@@ -60,3 +60,7 @@ func Load(buffer *[]byte, offset uint32, dataSize int) {
 	C.ckpt_read(unsafe.Pointer(buffer),
 		C.uint(offset), C.int(dataSize))
 }
+
+func ByteConvert(i interface{}) []byte {
+	return []byte(fmt.Sprintf("%v", i))
+}
