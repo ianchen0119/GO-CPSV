@@ -12,12 +12,12 @@ static void ckpt_destroy(){
 	cpsv_ckpt_destroy();
 }
 
-static void ckpt_read(void* buffer, unsigned int offset, int dataSize){
-	cpsv_sync_read((unsigned char*)buffer, offset, dataSize);
+static int ckpt_read(void* buffer, unsigned int offset, int dataSize){
+	return cpsv_sync_read((unsigned char*)buffer, offset, dataSize);
 }
 
-static void ckpt_write(void* data, unsigned int offset){
-	cpsv_sync_write((char*) data, offset);
+static int ckpt_write(void* data, unsigned int offset){
+	return cpsv_sync_write((char*) data, offset);
 }
 */
 import "C"
