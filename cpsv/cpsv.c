@@ -9,7 +9,6 @@ SaAisErrorT rc;
 SaCkptCheckpointCreationAttributesT ckptCreateAttr;
 SaCkptCheckpointOpenFlagsT ckptOpenFlags;
 SaCkptSectionCreationAttributesT sectionCreationAttributes;
-SaCkptIOVectorElementT writeVector, readVector;
 SaUint32T erroneousVectorIndex;
 const void *initialData = "Default data in the section";
 SaTimeT timeout = 1000000000;
@@ -26,11 +25,12 @@ Status cpsv_ckpt_init(){
 	version.minorVersion = 2;
 	printf("Initialising With Checkpoint Service....\n");
 	rc = saCkptInitialize(&ckptHandle, &callbk, &version);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
-	else
+	} else {
 		printf("Failed \n");
 		return -1;
+	}
 	ckptCreateAttr.creationFlags =
 	    SA_CKPT_CHECKPOINT_COLLOCATED | SA_CKPT_WR_ACTIVE_REPLICA;
 	ckptCreateAttr.checkpointSize = 1024;
@@ -45,34 +45,38 @@ Status cpsv_ckpt_init(){
 	       ckptName.value);
 	rc = saCkptCheckpointOpen(ckptHandle, &ckptName, &ckptCreateAttr,
 				  ckptOpenFlags, timeout, &checkpointHandle);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 		return 0;
-	else
+	} else {
 		printf("Failed \n");
 		return -1;
+	}
 }
 
 Status cpsv_ckpt_destroy(){
 	printf("Ckpt Closed ....\t");
 	rc = saCkptCheckpointClose(checkpointHandle);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
-	else
+	} else {
 		printf("Failed \n");
 		return -1;
+	}
 
 	printf("Ckpt Finalize being called ....\t");
 	rc = saCkptFinalize(ckptHandle);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 		return 0;
-	else
+	} else {
 		printf("Failed \n");
 		return -1;
+	}
 }
 
 Status cpsv_sync_read(unsigned char* buffer, SaOffsetT offset, int dataSize){
+	SaCkptIOVectorElementT readVector;
 	readVector.sectionId.id = (unsigned char *)"11";
 	readVector.sectionId.idLen = 2;
 	readVector.dataBuffer = buffer;
@@ -83,28 +87,33 @@ Status cpsv_sync_read(unsigned char* buffer, SaOffsetT offset, int dataSize){
 					&erroneousVectorIndex);
 	printf("Checkpoint Data Read = \"%s\"\n",
 		    (char *)readVector.dataBuffer);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
-	else
+	} else {
 		printf("Failed \n");
 		return -1;
+	}
 	printf("Synchronizing My Checkpoint being called ....\n");
 	rc = saCkptCheckpointSynchronize(checkpointHandle, timeout);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 		return 0;
-	else
+	} else {
 		printf("Failed \n");
 		return -1;
+	}
 }
 
 Status cpsv_sync_write(char* data, SaOffsetT offset){
+	SaCkptIOVectorElementT writeVector;
 	printf("Setting the Active Replica for my checkpoint ....\t");
 	rc = saCkptActiveReplicaSet(checkpointHandle);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
-	else
+	} else {
 		printf("Failed \n");
+		return -1;
+	}
 
 	sectionCreationAttributes.sectionId =
 		(SaCkptSectionIdT *)malloc(sizeof(SaCkptSectionIdT));
@@ -123,10 +132,12 @@ Status cpsv_sync_write(char* data, SaOffsetT offset){
 	rc = saCkptSectionCreate(checkpointHandle,
 				&sectionCreationAttributes,
 				initialData, 28);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
-	else
+	} else {
 		printf("Failed \n");
+		return -1;
+	}
 
 	writeVector.sectionId.id = (unsigned char *)"11";
 	writeVector.sectionId.idLen = 2;
@@ -142,19 +153,21 @@ Status cpsv_sync_write(char* data, SaOffsetT offset){
 	printf("DataOffset = %llu ....\n", writeVector.dataOffset);
 	rc = saCkptCheckpointWrite(checkpointHandle, &writeVector, 1,
 					&erroneousVectorIndex);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
-	else
+	} else {
 		printf("Failed \n");
 		return -1;
+	}
 	printf("Synchronizing My Checkpoint being called ....\n");
 	rc = saCkptCheckpointSynchronize(checkpointHandle, timeout);
-	if (rc == SA_AIS_OK)
+	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 		return 0;
-	else
+	} else {
 		printf("Failed \n");
 		return -1;
+	}
 }
 
 void AppCkptOpenCallback(SaInvocationT invocation,
@@ -165,7 +178,6 @@ void AppCkptOpenCallback(SaInvocationT invocation,
 		printf("Checkpoint Open Async callback unsuccessful\n");
 		return;
 	} else {
-
 		printf(
 		    "Checkpoint Open Async callback success and ckpt_hdl %llu \n",
 		    checkpointHandle);

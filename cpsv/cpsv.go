@@ -3,6 +3,7 @@ package cpsv
 /*
 #cgo LDFLAGS: -L/usr/local/lib -lSaCkpt
 #include "go-cpsv.h"
+#include <stdint.h>
 
 static void ckpt_init(){
 	cpsv_ckpt_init();
@@ -11,11 +12,11 @@ static void ckpt_destroy(){
 	cpsv_ckpt_destroy();
 }
 
-static void read(void* buffer, uint32_t offset, int dataSize){
+static void ckpt_read(void* buffer, unsigned int offset, int dataSize){
 	cpsv_sync_read((unsigned char*)buffer, offset, dataSize);
 }
 
-static void write(voidr* data, uint32_t offset){
+static void ckpt_write(void* data, unsigned int offset){
 	cpsv_sync_write((char*) data, offset);
 }
 */
@@ -29,7 +30,7 @@ import (
 )
 
 func Start() {
-	fmt.Println("Starting Go CPSV...")
+	fmt.Println("Starting GO CPSV...")
 	eventQInit()
 	C.ckpt_init()
 
@@ -48,7 +49,7 @@ func Start() {
 func Store(sectionId string, data []byte, offset int) {
 	var newReq req
 	newReq.sectionId = sectionId
-	newReq.data = C.CBytes(data)
+	newReq.data = (*C.char)(unsafe.Pointer(&data[0]))
 	newReq.offset = offset
 	newReq.reqType = Sync
 	q.push(newReq)
@@ -56,6 +57,6 @@ func Store(sectionId string, data []byte, offset int) {
 
 // load data from ckpt
 func Load(buffer []byte, offset uint32, dataSize int) {
-	C.read(unsafe.Pointer(&buffer[0])),
+	C.ckpt_read(unsafe.Pointer(&buffer[0]),
 		C.uint(offset), C.int(dataSize))
 }

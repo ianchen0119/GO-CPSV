@@ -4,7 +4,7 @@ package cpsv
 #cgo LDFLAGS: -L/usr/local/lib -lSaCkpt
 #include "go-cpsv.h"
 
-static void write(voidr* data, uint32_t offset){
+static void write(void* data, unsigned int offset){
 	cpsv_sync_write((char*) data, offset);
 }
 */
@@ -12,5 +12,6 @@ static void write(voidr* data, uint32_t offset){
 import "C"
 
 func Dispatcher() {
-
+	for true {
+	}
 }
