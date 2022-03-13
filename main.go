@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 	"unsafe"
+	"reflect"
 
 	"github.com/ianchen0119/GO-CPSV/cpsv"
 )
@@ -11,6 +12,7 @@ import (
 type Vertex struct {
 	X int32
 	Y int32
+	Z int32
 }
 
 type binary struct {
@@ -19,10 +21,15 @@ type binary struct {
 	cap  int
 }
 
+func getSize(i interface{}) int {
+	size := reflect.TypeOf(i).Size()
+	return int(size)
+}
+
 func main() {
 	cpsv.Start()
-	v := &Vertex{X: 15, Y: 25}
-	Len := unsafe.Sizeof(*v)
+	v := &Vertex{X: 15, Y: 25, Z:44}
+	Len := getSize(Vertex{})
 	testBytes := &binary{
 		addr: uintptr(unsafe.Pointer(v)),
 		cap:  int(Len),
@@ -35,11 +42,11 @@ func main() {
 
 	time.Sleep(2 * time.Second)
 
-	var readData []byte=make([]byte, 5)
-	len := cpsv.Load(&readData, 0, 5)
+	var readData []byte=make([]byte, Len)
+	len := cpsv.Load(&readData, 0, Len)
 	fmt.Println(len)
 	fmt.Printf("%v\n", readData)
 	var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
-	fmt.Printf("X: %d, Y:%d\n", bufV.X, bufV.Y)
+	fmt.Printf("X: %d, Y:%d, Z:%d\n", bufV.X, bufV.Y, bufV.Z)
 	
 }

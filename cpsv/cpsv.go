@@ -27,6 +27,7 @@ import (
 	"os/signal"
 	"syscall"
 	"unsafe"
+	"reflect"
 )
 
 func Start() {
@@ -62,6 +63,7 @@ func Load(buffer *[]byte, offset uint32, dataSize int) int {
 		C.uint(offset), C.int(dataSize)))
 }
 
-func Serialize(i interface{}) []byte {
-	return []byte(fmt.Sprintf("%v", i))
+func GetSize(i interface{}) int {
+	size := reflect.TypeOf(i).Size()
+	return int(size)
 }
