@@ -75,10 +75,9 @@ Status cpsv_ckpt_destroy(){
 	}
 }
 
-Status cpsv_sync_read(unsigned char* buffer, SaOffsetT offset, int dataSize){
+Status cpsv_sync_read(char* sectionId, unsigned char* buffer, SaOffsetT offset, int dataSize){
 	SaCkptIOVectorElementT readVector;
-	int result;
-	readVector.sectionId.id = (unsigned char *)"11";
+	readVector.sectionId.id = (unsigned char *)sectionId;
 	readVector.sectionId.idLen = 2;
 	readVector.dataBuffer = buffer;
 	readVector.dataSize = dataSize;
@@ -86,10 +85,8 @@ Status cpsv_sync_read(unsigned char* buffer, SaOffsetT offset, int dataSize){
 
 	rc = saCkptCheckpointRead(checkpointHandle, &readVector, 1,
 					&erroneousVectorIndex);
-	result = strlen((char *)readVector.dataBuffer);
 	printf("Checkpoint Data Read = \"%s\"\n",
 		    (char *)readVector.dataBuffer);
-	printf("Data Size: %d\n", result);
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 	} else {
@@ -100,14 +97,14 @@ Status cpsv_sync_read(unsigned char* buffer, SaOffsetT offset, int dataSize){
 	rc = saCkptCheckpointSynchronize(checkpointHandle, timeout);
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
-		return result;
+		return 0;
 	} else {
 		printf("Failed \n");
 		return -1;
 	}
 }
 
-Status cpsv_sync_write(char* data, SaOffsetT offset, int dataSize){
+Status cpsv_sync_write(char* sectionId, char* data, SaOffsetT offset, int dataSize){
 	SaCkptIOVectorElementT writeVector;
 	printf("Setting the Active Replica for my checkpoint ....\t");
 	rc = saCkptActiveReplicaSet(checkpointHandle);
@@ -120,7 +117,7 @@ Status cpsv_sync_write(char* data, SaOffsetT offset, int dataSize){
 
 	sectionCreationAttributes.sectionId =
 		(SaCkptSectionIdT *)malloc(sizeof(SaCkptSectionIdT));
-	sectionCreationAttributes.sectionId->id = (unsigned char *)"11";
+	sectionCreationAttributes.sectionId->id = (unsigned char *)sectionId;
 	sectionCreationAttributes.sectionId->idLen = 2;
 	/* 
 	 * Cpsv expects `expirationTime` as  absolute time
@@ -142,7 +139,7 @@ Status cpsv_sync_write(char* data, SaOffsetT offset, int dataSize){
 		return -1;
 	}
 
-	writeVector.sectionId.id = (unsigned char *)"11";
+	writeVector.sectionId.id = (unsigned char *)sectionId;
 	writeVector.sectionId.idLen = 2;
 	writeVector.dataBuffer = data;
 	writeVector.dataSize = dataSize;

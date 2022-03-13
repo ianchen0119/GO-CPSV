@@ -12,12 +12,8 @@ static void ckpt_destroy(){
 	cpsv_ckpt_destroy();
 }
 
-static int ckpt_read(void* buffer, unsigned int offset, int dataSize){
-	return cpsv_sync_read((unsigned char*)buffer, offset, dataSize);
-}
-
-static int ckpt_write(void* data, unsigned int offset, int dataSize){
-	return cpsv_sync_write((char*) data, offset, dataSize);
+static int ckpt_read(char* sectionId, void* buffer, unsigned int offset, int dataSize){
+	return cpsv_sync_read(sectionId, (unsigned char*)buffer, offset, dataSize);
 }
 */
 import "C"
@@ -42,6 +38,7 @@ func Start() {
 		fmt.Println("Signal:")
 		fmt.Println(sig)
 		C.ckpt_destroy()
+		os.Exit(0)
 	}()
 
 	go Dispatcher()
@@ -58,8 +55,8 @@ func Store(sectionId string, data []byte, size int, offset int) {
 }
 
 // load data from ckpt
-func Load(buffer *[]byte, offset uint32, dataSize int) int {
-	return int(C.ckpt_read(unsafe.Pointer(buffer),
+func Load(sectionId string, buffer *[]byte, offset uint32, dataSize int) int {
+	return int(C.ckpt_read((*C.char)(unsafe.Pointer(&sectionId)), unsafe.Pointer(buffer),
 		C.uint(offset), C.int(dataSize)))
 }
 
