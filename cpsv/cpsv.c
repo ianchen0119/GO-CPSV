@@ -77,6 +77,7 @@ Status cpsv_ckpt_destroy(){
 
 Status cpsv_sync_read(unsigned char* buffer, SaOffsetT offset, int dataSize){
 	SaCkptIOVectorElementT readVector;
+	int result;
 	readVector.sectionId.id = (unsigned char *)"11";
 	readVector.sectionId.idLen = 2;
 	readVector.dataBuffer = buffer;
@@ -85,8 +86,10 @@ Status cpsv_sync_read(unsigned char* buffer, SaOffsetT offset, int dataSize){
 
 	rc = saCkptCheckpointRead(checkpointHandle, &readVector, 1,
 					&erroneousVectorIndex);
+	result = strlen((char *)readVector.dataBuffer);
 	printf("Checkpoint Data Read = \"%s\"\n",
 		    (char *)readVector.dataBuffer);
+	printf("Data Size: %d\n", result);
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 	} else {
@@ -97,7 +100,7 @@ Status cpsv_sync_read(unsigned char* buffer, SaOffsetT offset, int dataSize){
 	rc = saCkptCheckpointSynchronize(checkpointHandle, timeout);
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
-		return 0;
+		return result;
 	} else {
 		printf("Failed \n");
 		return -1;

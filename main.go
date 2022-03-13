@@ -21,7 +21,7 @@ type binary struct {
 
 func main() {
 	cpsv.Start()
-	v := &Vertex{X: 1, Y: 2}
+	v := &Vertex{X: 15, Y: 25}
 	Len := unsafe.Sizeof(*v)
 	testBytes := &binary{
 		addr: uintptr(unsafe.Pointer(v)),
@@ -35,8 +35,11 @@ func main() {
 
 	time.Sleep(2 * time.Second)
 
-	var readData []byte
-	//bufPtr := (*[]byte)(unsafe.Pointer(&readData))
-	cpsv.Load(&readData, 0, int(Len))
+	var readData []byte=make([]byte, 5)
+	len := cpsv.Load(&readData, 0, 5)
+	fmt.Println(len)
 	fmt.Printf("%v\n", readData)
+	var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
+	fmt.Printf("X: %d, Y:%d\n", bufV.X, bufV.Y)
+	
 }

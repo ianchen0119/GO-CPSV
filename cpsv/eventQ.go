@@ -2,13 +2,13 @@ package cpsv
 
 import "fmt"
 
-var q EventQ
+var q eventQ
 
 func eventQInit() {
 	q.queue = make(chan req, 100)
 }
 
-func (q *EventQ) pull(req *req) {
+func (q *eventQ) pull(req *req) {
 	val, ok := <-q.queue
 	if ok {
 		*req = val
@@ -17,6 +17,6 @@ func (q *EventQ) pull(req *req) {
 	}
 }
 
-func (q *EventQ) push(req req) {
+func (q *eventQ) push(req req) {
 	q.queue <- req
 }

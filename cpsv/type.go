@@ -15,6 +15,12 @@ type req struct {
 	reqType   int
 }
 
-type EventQ struct {
+type eventQ struct {
 	queue chan req
+}
+
+type binary struct {
+	addr uintptr
+	len  int
+	cap  int
 }
