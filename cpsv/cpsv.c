@@ -104,7 +104,7 @@ Status cpsv_sync_read(unsigned char* buffer, SaOffsetT offset, int dataSize){
 	}
 }
 
-Status cpsv_sync_write(char* data, SaOffsetT offset){
+Status cpsv_sync_write(char* data, SaOffsetT offset, int dataSize){
 	SaCkptIOVectorElementT writeVector;
 	printf("Setting the Active Replica for my checkpoint ....\t");
 	rc = saCkptActiveReplicaSet(checkpointHandle);
@@ -142,7 +142,7 @@ Status cpsv_sync_write(char* data, SaOffsetT offset){
 	writeVector.sectionId.id = (unsigned char *)"11";
 	writeVector.sectionId.idLen = 2;
 	writeVector.dataBuffer = data;
-	writeVector.dataSize = strlen(writeVector.dataBuffer);
+	writeVector.dataSize = dataSize;
 	writeVector.dataOffset = offset;
 	writeVector.readSize = 0;
 

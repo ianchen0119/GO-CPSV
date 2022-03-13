@@ -9,24 +9,34 @@ import (
 )
 
 type Vertex struct {
-	X int
-	Y int
+	X int32
+	Y int32
+}
+
+type binary struct {
+	addr uintptr
+	len  int
+	cap  int
 }
 
 func main() {
 	cpsv.Start()
-	var p *Vertex
-	v := Vertex{1, 2}
-	p = &v
-	p.X = 30
-	fmt.Println(v)
-	byteData := []byte(fmt.Sprintf("%v", v))
-	cpsv.Store("data-1", byteData, 0)
+	v := &Vertex{X: 1, Y: 2}
+	Len := unsafe.Sizeof(*v)
+	testBytes := &binary{
+		addr: uintptr(unsafe.Pointer(v)),
+		cap:  int(Len),
+		len:  int(Len),
+	}
+	fmt.Printf("Len: %d\n", int(Len))
+	wbuf := *(*[]byte)(unsafe.Pointer(testBytes))
+	fmt.Println(wbuf)
+	cpsv.Store("data-1", wbuf, int(Len), 0)
 
-	time.Sleep(8 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	var readData []byte
-	cpsv.Load(&readData, 0, 50)
-	var newV Vertex = *(*Vertex)(unsafe.Pointer(&readData))
-	fmt.Println(newV.X)
+	//bufPtr := (*[]byte)(unsafe.Pointer(&readData))
+	cpsv.Load(&readData, 0, int(Len))
+	fmt.Printf("%v\n", readData)
 }

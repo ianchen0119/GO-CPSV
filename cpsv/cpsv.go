@@ -16,8 +16,8 @@ static int ckpt_read(void* buffer, unsigned int offset, int dataSize){
 	return cpsv_sync_read((unsigned char*)buffer, offset, dataSize);
 }
 
-static int ckpt_write(void* data, unsigned int offset){
-	return cpsv_sync_write((char*) data, offset);
+static int ckpt_write(void* data, unsigned int offset, int dataSize){
+	return cpsv_sync_write((char*) data, offset, dataSize);
 }
 */
 import "C"
@@ -46,12 +46,13 @@ func Start() {
 	go Dispatcher()
 }
 
-func Store(sectionId string, data []byte, offset int) {
+func Store(sectionId string, data []byte, size int, offset int) {
 	var newReq req
 	newReq.sectionId = sectionId
 	newReq.data = (*C.char)(unsafe.Pointer(&data[0]))
 	newReq.offset = offset
 	newReq.reqType = Sync
+	newReq.size = size
 	q.push(newReq)
 }
 
