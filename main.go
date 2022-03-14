@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"time"
+	// "time"
 	"unsafe"
 
 	"github.com/ianchen0119/GO-CPSV/cpsv"
@@ -30,12 +30,13 @@ func main() {
 		len:  int(Len),
 	}
 	wbuf := *(*[]byte)(unsafe.Pointer(testBytes))
-	cpsv.Store("data-1", wbuf, int(Len), 0)
+	cpsv.Store("d1", wbuf, int(Len), 0)
 
-	time.Sleep(2 * time.Second)
+	fmt.Scanln()
 
 	var readData []byte=make([]byte, Len)
-	cpsv.Load("data-1", &readData, 0, Len)
+	cpsv.Load("d2", &readData, 0, Len)
+	fmt.Println(readData)
 	var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
 	fmt.Printf("X: %d, Y:%d, Z:%d\n", bufV.X, bufV.Y, bufV.Z)
 	

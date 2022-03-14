@@ -19,7 +19,9 @@ func Dispatcher() {
 		req, ok := <-q.queue
 		if ok {
 			fmt.Println("handle event from eventQ")
-			status := int(C.ckpt_write((*C.char)(unsafe.Pointer(&req.sectionId)), (*C.char)(unsafe.Pointer(&req.data)), C.uint(req.offset), C.int(req.size)))
+			cstr := C.CString(req.sectionId)
+			defer C.free(unsafe.Pointer(cstr))
+			status := int(C.ckpt_write(cstr, (*C.char)(unsafe.Pointer(&req.data)), C.uint(req.offset), C.int(req.size)))
 			if status == -1 {
 				q.push(req)
 			}

@@ -44,6 +44,10 @@ func Start() {
 	go Dispatcher()
 }
 
+func Destroy() {
+	C.ckpt_destroy()
+}
+
 func Store(sectionId string, data []byte, size int, offset int) {
 	var newReq req
 	newReq.sectionId = sectionId
@@ -56,7 +60,9 @@ func Store(sectionId string, data []byte, size int, offset int) {
 
 // load data from ckpt
 func Load(sectionId string, buffer *[]byte, offset uint32, dataSize int) int {
-	return int(C.ckpt_read((*C.char)(unsafe.Pointer(&sectionId)), unsafe.Pointer(buffer),
+	cstr := C.CString(sectionId)
+	defer C.free(unsafe.Pointer(cstr))
+	return int(C.ckpt_read(cstr, unsafe.Pointer(buffer),
 		C.uint(offset), C.int(dataSize)))
 }
 
