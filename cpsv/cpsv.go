@@ -63,6 +63,7 @@ func Load(sectionId string, offset uint32, dataSize int) []byte {
 	cstr := C.CString(sectionId)
 	var data = C.ckpt_read(cstr,
 		C.uint(offset), C.int(dataSize))
+	fmt.Println(C.GoBytes(unsafe.Pointer(data), C.int(dataSize)))
 	result := *(*[]byte)(unsafe.Pointer(data))
 	fmt.Println(result)
 	defer C.free(unsafe.Pointer(cstr))

@@ -91,6 +91,7 @@ unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize){
 	readVector.sectionId.idLen = 2;
 	readVector.dataBuffer = read_buff;
 	readVector.dataSize = dataSize;
+	readVector.readSize = dataSize;
 	readVector.dataOffset = offset;
 
 	printf("Section-Id = %s ....\n", readVector.sectionId.id);
