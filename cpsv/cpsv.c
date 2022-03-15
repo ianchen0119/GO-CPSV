@@ -62,7 +62,6 @@ Status cpsv_ckpt_destroy(){
 		printf("PASSED \n");
 	} else {
 		printf("Failed \n");
-		return -1;
 	}		
 	printf("Ckpt Closed ....\t");
 	rc = saCkptCheckpointClose(checkpointHandle);
@@ -70,7 +69,6 @@ Status cpsv_ckpt_destroy(){
 		printf("PASSED \n");
 	} else {
 		printf("Failed \n");
-		return -1;
 	}
 
 	printf("Ckpt Finalize being called ....\t");
