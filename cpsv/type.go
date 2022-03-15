@@ -9,7 +9,7 @@ const (
 
 type req struct {
 	sectionId string
-	data      *[]byte
+	data      *[4096]byte
 	size      int
 	offset    int
 	reqType   int

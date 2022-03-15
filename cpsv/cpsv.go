@@ -48,7 +48,7 @@ func Destroy() {
 	C.ckpt_destroy()
 }
 
-func Store(sectionId string, data []byte, size int, offset int) {
+func Store(sectionId string, data [4096]byte, size int, offset int) {
 	var newReq req
 	newReq.sectionId = sectionId
 	newReq.data = &data
@@ -63,9 +63,8 @@ func Load(sectionId string, offset uint32, dataSize int) []byte {
 	cstr := C.CString(sectionId)
 	var data = C.ckpt_read(cstr,
 		C.uint(offset), C.int(dataSize))
-	fmt.Println(C.GoBytes(unsafe.Pointer(data), C.int(dataSize)))
-	result := *(*[]byte)(unsafe.Pointer(data))
-	fmt.Println(result)
+	result := C.GoBytes(unsafe.Pointer(data), C.int(dataSize))
+
 	defer C.free(unsafe.Pointer(cstr))
 	defer C.free(unsafe.Pointer(data))
 	return result
