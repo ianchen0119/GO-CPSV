@@ -23,15 +23,13 @@ type binary struct {
 
 func main() {
 	cpsv.Start()
-	v := &Vertex{X: 15, Y: 23, Z: 34}
+	v := &Vertex{X: 15, Y: 23, Z: 14}
 	Len := cpsv.GetSize(Vertex{})
 	fmt.Println(Len)
 
 	wbuf := C.GoBytes(unsafe.Pointer(v), C.int(Len))
-	// var x *C.uchar = (*C.uchar)(unsafe.Pointer(&wbuf))
-	// y := C.GoBytes((unsafe.Pointer(x)), C.int(Len))
+
 	fmt.Println(wbuf)
-	// fmt.Println(y)
 	cpsv.Store("d1", wbuf, int(Len), 0)
 
 	fmt.Scanln()
