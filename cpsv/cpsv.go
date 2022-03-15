@@ -12,8 +12,8 @@ static void ckpt_destroy(){
 	cpsv_ckpt_destroy();
 }
 
-static int ckpt_read(char* sectionId, void* buffer, unsigned int offset, int dataSize){
-	return cpsv_sync_read(sectionId, (unsigned char*)buffer, offset, dataSize);
+static int ckpt_read(char* sectionId, unsigned char* buffer, unsigned int offset, int dataSize){
+	return cpsv_sync_read(sectionId, buffer, offset, dataSize);
 }
 */
 import "C"
@@ -62,7 +62,7 @@ func Store(sectionId string, data []byte, size int, offset int) {
 func Load(sectionId string, buffer *[]byte, offset uint32, dataSize int) int {
 	cstr := C.CString(sectionId)
 	defer C.free(unsafe.Pointer(cstr))
-	return int(C.ckpt_read(cstr, unsafe.Pointer(buffer),
+	return int(C.ckpt_read(cstr, (*C.uchar)(unsafe.Pointer(buffer)),
 		C.uint(offset), C.int(dataSize)))
 }
 

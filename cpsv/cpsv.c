@@ -35,9 +35,9 @@ Status cpsv_ckpt_init(){
 	    SA_CKPT_CHECKPOINT_COLLOCATED | SA_CKPT_WR_ACTIVE_REPLICA;
 	ckptCreateAttr.checkpointSize = 1024;
 	ckptCreateAttr.retentionDuration = 100000;
-	ckptCreateAttr.maxSections = 2;
-	ckptCreateAttr.maxSectionSize = 700;
-	ckptCreateAttr.maxSectionIdSize = 4;
+	ckptCreateAttr.maxSections = 20;
+	ckptCreateAttr.maxSectionSize = 1000;
+	ckptCreateAttr.maxSectionIdSize = 20;
 
 	ckptOpenFlags = SA_CKPT_CHECKPOINT_CREATE | SA_CKPT_CHECKPOINT_READ |
 			SA_CKPT_CHECKPOINT_WRITE;

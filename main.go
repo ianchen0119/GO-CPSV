@@ -22,8 +22,9 @@ type binary struct {
 
 func main() {
 	cpsv.Start()
-	v := &Vertex{X: 15, Y: 25, Z:44}
+	v := &Vertex{X: 150, Y: 235, Z: 434}
 	Len := cpsv.GetSize(Vertex{})
+	fmt.Println(Len)
 	testBytes := &binary{
 		addr: uintptr(unsafe.Pointer(v)),
 		cap:  int(Len),
