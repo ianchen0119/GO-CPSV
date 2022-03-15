@@ -12,8 +12,8 @@ static void ckpt_destroy(){
 	cpsv_ckpt_destroy();
 }
 
-static int ckpt_read(char* sectionId, unsigned char* buffer, unsigned int offset, int dataSize){
-	return cpsv_sync_read(sectionId, buffer, offset, dataSize);
+static unsigned char* ckpt_read(char* sectionId, unsigned int offset, int dataSize){
+	return cpsv_sync_read(sectionId, offset, dataSize);
 }
 */
 import "C"
@@ -51,7 +51,7 @@ func Destroy() {
 func Store(sectionId string, data []byte, size int, offset int) {
 	var newReq req
 	newReq.sectionId = sectionId
-	newReq.data = (*C.char)(unsafe.Pointer(&data[0]))
+	newReq.data = &data
 	newReq.offset = offset
 	newReq.reqType = Sync
 	newReq.size = size
@@ -59,11 +59,15 @@ func Store(sectionId string, data []byte, size int, offset int) {
 }
 
 // load data from ckpt
-func Load(sectionId string, buffer *[]byte, offset uint32, dataSize int) int {
+func Load(sectionId string, offset uint32, dataSize int) []byte {
 	cstr := C.CString(sectionId)
+	var data = C.ckpt_read(cstr,
+		C.uint(offset), C.int(dataSize))
+	result := *(*[]byte)(unsafe.Pointer(data))
+	fmt.Println(result)
 	defer C.free(unsafe.Pointer(cstr))
-	return int(C.ckpt_read(cstr, (*C.uchar)(unsafe.Pointer(buffer)),
-		C.uint(offset), C.int(dataSize)))
+	defer C.free(unsafe.Pointer(data))
+	return result
 }
 
 func GetSize(i interface{}) int {

@@ -1,5 +1,6 @@
 package main
 
+import "C"
 import (
 	"fmt"
 	// "time"
@@ -22,26 +23,23 @@ type binary struct {
 
 func main() {
 	cpsv.Start()
-	v := &Vertex{X: 150, Y: 235, Z: 434}
+	v := &Vertex{X: 15, Y: 23, Z: 34}
 	Len := cpsv.GetSize(Vertex{})
 	fmt.Println(Len)
-	testBytes := &binary{
-		addr: uintptr(unsafe.Pointer(v)),
-		cap:  int(Len),
-		len:  int(Len),
-	}
-	wbuf := *(*[]byte)(unsafe.Pointer(testBytes))
+
+	wbuf := C.GoBytes(unsafe.Pointer(v), C.int(Len))
+	// var x *C.uchar = (*C.uchar)(unsafe.Pointer(&wbuf))
+	// y := C.GoBytes((unsafe.Pointer(x)), C.int(Len))
 	fmt.Println(wbuf)
+	// fmt.Println(y)
 	cpsv.Store("d1", wbuf, int(Len), 0)
 
 	fmt.Scanln()
 
-	var readData []byte=make([]byte, Len)
-	cpsv.Load("d1", &readData, 0, Len)
-	fmt.Println(readData)
+	readData := cpsv.Load("d1", 0, Len)
 	var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
 	fmt.Printf("X: %d, Y:%d, Z:%d\n", bufV.X, bufV.Y, bufV.Z)
-	
+
 	fmt.Scanln()
 	cpsv.Destroy()
 }
