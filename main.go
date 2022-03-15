@@ -30,14 +30,17 @@ func main() {
 		len:  int(Len),
 	}
 	wbuf := *(*[]byte)(unsafe.Pointer(testBytes))
+	fmt.Println(wbuf)
 	cpsv.Store("d1", wbuf, int(Len), 0)
 
 	fmt.Scanln()
 
 	var readData []byte=make([]byte, Len)
-	cpsv.Load("d2", &readData, 0, Len)
+	cpsv.Load("d1", &readData, 0, Len)
 	fmt.Println(readData)
 	var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
 	fmt.Printf("X: %d, Y:%d, Z:%d\n", bufV.X, bufV.Y, bufV.Z)
 	
+	fmt.Scanln()
+	cpsv.Destroy()
 }

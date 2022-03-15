@@ -87,9 +87,10 @@ Status cpsv_ckpt_destroy(){
 Status cpsv_sync_read(char* sectionId, unsigned char* buffer, SaOffsetT offset, int dataSize){
 	SaAisErrorT rc;
 	SaCkptIOVectorElementT readVector;
+	unsigned char read_buff[100] = {0};
 	readVector.sectionId.id = (unsigned char *)sectionId;
 	readVector.sectionId.idLen = 2;
-	readVector.dataBuffer = buffer;
+	readVector.dataBuffer = read_buff;
 	readVector.dataSize = dataSize;
 	readVector.dataOffset = offset;
 
@@ -99,6 +100,7 @@ Status cpsv_sync_read(char* sectionId, unsigned char* buffer, SaOffsetT offset, 
 	printf("Checkpoint Data Read = \"%s\"\n",
 		    (char *)readVector.dataBuffer);
 	if (rc == SA_AIS_OK) {
+		strncpy((char *)buffer, (char *)read_buff, sizeof(char)*dataSize);
 		printf("PASSED \n");
 	} else {
 		printf("Failed \n");
@@ -130,7 +132,7 @@ Status cpsv_sync_write(char* sectionId, char* data, SaOffsetT offset, int dataSi
 	sectionCreationAttributes.sectionId =
 		(SaCkptSectionIdT *)malloc(sizeof(SaCkptSectionIdT));
 	sectionCreationAttributes.sectionId->id = (unsigned char *)sectionId;
-	sectionCreationAttributes.sectionId->idLen = 2;
+	sectionCreationAttributes.sectionId->idLen = strlen(sectionId);
 	/* 
 	 * Cpsv expects `expirationTime` as  absolute time
 	 * check  section 3.4.3.2 SaCkptSectionCreationAttributesT of
@@ -147,8 +149,7 @@ Status cpsv_sync_write(char* sectionId, char* data, SaOffsetT offset, int dataSi
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 	} else {
-		printf("Failed \n");
-		return -1;
+		goto err;
 	}
 
 	writeVector.sectionId.id = (unsigned char *)sectionId;
@@ -168,18 +169,21 @@ Status cpsv_sync_write(char* sectionId, char* data, SaOffsetT offset, int dataSi
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 	} else {
-		printf("Failed \n");
-		return -1;
+		goto err;
 	}
 	printf("Synchronizing My Checkpoint being called ....\n");
 	rc = saCkptCheckpointSynchronize(checkpointHandle, timeout);
 	if (rc == SA_AIS_OK) {
+		free(sectionCreationAttributes.sectionId);
 		printf("PASSED \n");
 		return 0;
 	} else {
-		printf("Failed \n");
-		return -1;
+		goto err;
 	}
+err:
+	free(sectionCreationAttributes.sectionId);
+	printf("Failed \n");
+	return -1;
 }
 
 void AppCkptOpenCallback(SaInvocationT invocation,
