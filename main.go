@@ -19,11 +19,11 @@ func main() {
 	len := cpsv.GetSize(Vertex{})
 	wbuf := C.GoBytes(unsafe.Pointer(v), C.int(len))
 
-	cpsv.Store("d1", wbuf, int(Len), 0)
+	cpsv.Store("d1", wbuf, int(len), 0)
 
 	fmt.Scanln()
 
-	readData := cpsv.Load("d1", 0, Len)
+	readData := cpsv.Load("d1", 0, len)
 	var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
 	fmt.Scanln()
 

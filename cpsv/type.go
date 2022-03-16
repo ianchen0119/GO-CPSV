@@ -18,9 +18,3 @@ type req struct {
 type eventQ struct {
 	queue chan req
 }
-
-type binary struct {
-	addr uintptr
-	len  int
-	cap  int
-}
