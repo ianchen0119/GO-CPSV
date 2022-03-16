@@ -26,6 +26,8 @@ import (
 	"reflect"
 )
 
+var writeBuf [4096]byte
+
 func Start() {
 	fmt.Println("Starting GO CPSV...")
 	eventQInit()
@@ -48,10 +50,15 @@ func Destroy() {
 	C.ckpt_destroy()
 }
 
-func Store(sectionId string, data [4096]byte, size int, offset int) {
+func Store(sectionId string, data []byte, size int, offset int) {
 	var newReq req
+
+	for i := 0; i < size; i++ {
+		writeBuf[i] = data[i]
+	}
+
 	newReq.sectionId = sectionId
-	newReq.data = &data
+	newReq.data = &writeBuf
 	newReq.offset = offset
 	newReq.reqType = Sync
 	newReq.size = size

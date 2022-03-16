@@ -16,15 +16,8 @@ type Vertex struct {
 func main() {
 	cpsv.Start()
 	v := &Vertex{X: 15, Y: 23}
-	Len := cpsv.GetSize(Vertex{})
-	fmt.Println(Len)
-
-	var wbuf [4096]byte
-	byteSlice := C.GoBytes(unsafe.Pointer(v), C.int(Len))
-	
-	for i :=0;i<Len;i++ {
-		wbuf[i] = byteSlice[i]
-	}
+	len := cpsv.GetSize(Vertex{})
+	wbuf := C.GoBytes(unsafe.Pointer(v), C.int(len))
 
 	cpsv.Store("d1", wbuf, int(Len), 0)
 
