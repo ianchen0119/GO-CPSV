@@ -3,7 +3,6 @@ package main
 import "C"
 import (
 	"fmt"
-	// "time"
 	"unsafe"
 
 	"github.com/ianchen0119/GO-CPSV/cpsv"
@@ -12,22 +11,11 @@ import (
 type Vertex struct {
 	X int32
 	Y int32
-	Z int32
-}
-
-type binary struct {
-	addr uintptr
-	len  int
-	cap  int
-}
-
-func test(val *[4096]byte){
-	fmt.Println((*val)[0])
 }
 
 func main() {
 	cpsv.Start()
-	v := &Vertex{X: 15, Y: 23, Z: 16}
+	v := &Vertex{X: 15, Y: 23}
 	Len := cpsv.GetSize(Vertex{})
 	fmt.Println(Len)
 
@@ -46,7 +34,7 @@ func main() {
 	var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
 	fmt.Scanln()
 
-	fmt.Printf("X: %d, Y:%d, Z:%d\n", bufV.X, bufV.Y, bufV.Z)
+	fmt.Printf("X: %d, Y:%d\n", bufV.X, bufV.Y)
 
 	cpsv.Destroy()
 }
