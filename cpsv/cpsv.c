@@ -99,14 +99,6 @@ unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize){
 					&erroneousVectorIndex);
 	printf("Checkpoint Data Read = \"%d\"\n",
 		    *(int*) readVector.dataBuffer);
-	// if (rc == SA_AIS_OK) {
-	// 	printf("PASSED \n");
-	// } else {
-	// 	printf("Failed \n");
-	// 	goto err;
-	// }
-	// printf("Synchronizing My Checkpoint being called ....\n");
-	// rc = saCkptCheckpointSynchronize(checkpointHandle, timeout);
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 		return read_buff;
@@ -122,14 +114,6 @@ unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize){
 Status cpsv_sync_write(char* sectionId, unsigned char* data, SaOffsetT offset, int dataSize){
 	SaAisErrorT rc;
 	SaCkptIOVectorElementT writeVector;
-	// printf("Setting the Active Replica for my checkpoint ....\t");
-	// rc = saCkptActiveReplicaSet(checkpointHandle);
-	// if (rc == SA_AIS_OK) {
-	// 	printf("PASSED \n");
-	// } else {
-	// 	printf("Failed \n");
-	// 	return -1;
-	// }
 
 	sectionCreationAttributes.sectionId =
 		(SaCkptSectionIdT *)malloc(sizeof(SaCkptSectionIdT));
@@ -168,13 +152,6 @@ Status cpsv_sync_write(char* sectionId, unsigned char* data, SaOffsetT offset, i
 	printf("DataOffset = %llu ....\n", writeVector.dataOffset);
 	rc = saCkptCheckpointWrite(checkpointHandle, &writeVector, 1,
 					&erroneousVectorIndex);
-	// if (rc == SA_AIS_OK) {
-	// 	printf("PASSED \n");
-	// } else {
-	// 	goto err;
-	// }
-	// printf("Synchronizing My Checkpoint being called ....\n");
-	// rc = saCkptCheckpointSynchronize(checkpointHandle, timeout);
 	if (rc == SA_AIS_OK) {
 		free(sectionCreationAttributes.sectionId);
 		printf("PASSED \n");
