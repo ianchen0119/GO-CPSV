@@ -17,13 +17,14 @@ static unsigned char* ckpt_read(char* sectionId, unsigned int offset, int dataSi
 }
 */
 import "C"
+
 import (
 	"fmt"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 	"unsafe"
-	"reflect"
 )
 
 var writeBuf [4096]byte
@@ -68,10 +69,10 @@ func Store(sectionId string, data []byte, size int, offset int) {
 // load data from ckpt
 func Load(sectionId string, offset uint32, dataSize int) []byte {
 	cstr := C.CString(sectionId)
-	var data = C.ckpt_read(cstr,
+	data := C.ckpt_read(cstr,
 		C.uint(offset), C.int(dataSize))
 	defer C.free(unsafe.Pointer(cstr))
-	if *(*C.uchar)(data) != 0 {
+	if data != nil && *(*C.uchar)(data) != 0 {
 		defer C.free(unsafe.Pointer(data))
 		return C.GoBytes(unsafe.Pointer(data), C.int(dataSize))
 	}
