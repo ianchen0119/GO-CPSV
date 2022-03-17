@@ -28,7 +28,9 @@ RUN apt-get update && apt-get install -y \
     golang \
     && apt-get autoremove -y \
     && apt-get clean \ 
-    && rm /var/lib/apt/lists/*.lz4
+    && rm /var/lib/apt/lists/*.lz4 \
+    &&  apt-get remove -y golang-1.6
+
 
 # Dynamic part which can be sent via --build-arg version=5.2.GA
 ARG buildversion="5.2.GA"
@@ -36,7 +38,7 @@ ARG configureflags="--enable-imm-pbe --enable-tipc"
 
 # Packages for development. Branch "default" will be build, which is the latest. One can also use opensaf-4.6.x | opensaf-4.5.x | opensaf-4.4.x | opensaf-4.3.x instead. 
 RUN apt-get update && apt-get install -y \
-    mercurial gcc g++ libxml2-dev automake m4 autoconf libtool pkg-config make python-dev libsqlite3-dev binutils git \
+    mercurial gcc g++ libxml2-dev automake m4 autoconf libtool pkg-config make python-dev libsqlite3-dev binutils git wget \
     && cd /home/opensaf \
     && hg clone http://hg.code.sf.net/p/opensaf/staging opensaf-staging \
     && cd opensaf-* \
@@ -47,6 +49,11 @@ RUN apt-get update && apt-get install -y \
     && ldconfig \
     && sed '/\. \/lib\/lsb\/init-functions/ a\\/etc\/init.d\/setup-opensaf-node' -i /etc/init.d/opensafd
 
+#download golang-1.17
+Run wget https://dl.google.com/go/go1.17.8.linux-amd64.tar.gz && \
+    tar -C /usr/local -zxvf go1.17.8.linux-amd64.tar.gz &&\
+    mkdir -p /go/{bin,pkg,src}
+    
 # download GO-CPSV
 RUN cd /home/opensaf \
     && git clone https://github.com/ianchen0119/GO-CPSV.git
@@ -58,5 +65,9 @@ RUN groupadd opensaf && \
  echo 'Defaults:opensaf !requiretty' >> /etc/sudoers
 
 ENV container docker
+ENV GOPATH=/go
+ENV GOROOT=/usr/local/go    
+ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+ENV GO111MODULE=auto
 
 CMD ["/bin/bash"]
