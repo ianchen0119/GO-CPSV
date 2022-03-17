@@ -8,11 +8,6 @@ import (
 	"github.com/ianchen0119/GO-CPSV/cpsv"
 )
 
-type Vertex struct {
-	X int32
-	Y int32
-}
-
 func main() {
 	cpsv.Start("safCkpt=TEST1,safApp=safCkptService")
 	v := &Vertex{X: 15, Y: 23}
@@ -23,11 +18,15 @@ func main() {
 
 	fmt.Scanln()
 
-	readData := cpsv.Load("d1", 0, len)
-	var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
-	fmt.Scanln()
+	readData, err := cpsv.Load("d1", 0, len)
+	if err == nil {
+		var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
+		fmt.Scanln()
 
-	fmt.Printf("X: %d, Y:%d\n", bufV.X, bufV.Y)
-
+		fmt.Printf("X: %d, Y:%d\n", bufV.X, bufV.Y)
+	} else {
+		fmt.Println(err)
+		fmt.Scanln()
+	}
 	cpsv.Destroy()
 }

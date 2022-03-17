@@ -23,11 +23,15 @@ func main() {
 
 	fmt.Scanln()
 
-	readData := cpsv.Load("d1", 0, len)
-	var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
-	fmt.Scanln()
+	readData, err := cpsv.Load("d1", 0, len)
+	if err == nil {
+		var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
+		fmt.Scanln()
 
-	fmt.Printf("X: %d, Y:%d\n", bufV.X, bufV.Y)
-
+		fmt.Printf("X: %d, Y:%d\n", bufV.X, bufV.Y)
+	} else {
+		fmt.Println(err)
+		fmt.Scanln()
+	}
 	cpsv.Destroy()
 }

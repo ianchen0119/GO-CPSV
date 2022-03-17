@@ -25,6 +25,7 @@ import (
 	"reflect"
 	"syscall"
 	"unsafe"
+	"errors"
 )
 
 func Start(ckptName string) {
@@ -65,19 +66,23 @@ func Store(sectionId string, data []byte, size int, offset int) {
 }
 
 // load data from ckpt
-func Load(sectionId string, offset uint32, dataSize int) []byte {
+func Load(sectionId string, offset uint32, dataSize int) ([]byte, error) {
 	cStr := C.CString(sectionId)
 	data := C.ckpt_read(cStr,
 		C.uint(offset), C.int(dataSize))
 	defer C.free(unsafe.Pointer(cStr))
-	if data != nil && *(*C.uchar)(data) != 0 {
+	if data != nil {
 		defer C.free(unsafe.Pointer(data))
-		return C.GoBytes(unsafe.Pointer(data), C.int(dataSize))
+		return C.GoBytes(unsafe.Pointer(data), C.int(dataSize)), nil
 	}
-	return make([]byte, dataSize)
+	return make([]byte, dataSize), errors.New("No data found")
 }
 
 func GetSize(i interface{}) int {
 	size := reflect.TypeOf(i).Size()
 	return int(size)
+}
+
+func GoBytes(unsafePtr unsafe.Pointer, length int) []byte {
+	return C.GoBytes(unsafePtr, C.int(length))
 }
