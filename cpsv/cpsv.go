@@ -5,8 +5,8 @@ package cpsv
 #include "go-cpsv.h"
 #include <stdint.h>
 
-static void ckpt_init(){
-	cpsv_ckpt_init();
+static void ckpt_init(char* ckptName){
+	cpsv_ckpt_init(ckptName);
 }
 static void ckpt_destroy(){
 	cpsv_ckpt_destroy();
@@ -27,12 +27,13 @@ import (
 	"unsafe"
 )
 
-var writeBuf [4096]byte
-
-func Start() {
+func Start(ckptName string) {
 	fmt.Println("Starting GO CPSV...")
+	cStr := C.CString(ckptName)
+	defer C.free(unsafe.Pointer(cStr))
+	
 	eventQInit()
-	C.ckpt_init()
+	C.ckpt_init(cStr)
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -54,24 +55,21 @@ func Destroy() {
 func Store(sectionId string, data []byte, size int, offset int) {
 	var newReq req
 
-	for i := 0; i < size; i++ {
-		writeBuf[i] = data[i]
-	}
-
 	newReq.sectionId = sectionId
-	newReq.data = &writeBuf
+	newReq.data = data
 	newReq.offset = offset
 	newReq.reqType = Sync
 	newReq.size = size
+	newReq.resend = 3
 	q.push(newReq)
 }
 
 // load data from ckpt
 func Load(sectionId string, offset uint32, dataSize int) []byte {
-	cstr := C.CString(sectionId)
-	data := C.ckpt_read(cstr,
+	cStr := C.CString(sectionId)
+	data := C.ckpt_read(cStr,
 		C.uint(offset), C.int(dataSize))
-	defer C.free(unsafe.Pointer(cstr))
+	defer C.free(unsafe.Pointer(cStr))
 	if data != nil && *(*C.uchar)(data) != 0 {
 		defer C.free(unsafe.Pointer(data))
 		return C.GoBytes(unsafe.Pointer(data), C.int(dataSize))

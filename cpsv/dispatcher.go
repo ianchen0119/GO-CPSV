@@ -20,9 +20,12 @@ func Dispatcher() {
 		if ok {
 			fmt.Println("handle event from eventQ")
 			cstr := C.CString(req.sectionId)
+			cData := C.CBytes(req.data)
 			defer C.free(unsafe.Pointer(cstr))
-			status := int(C.ckpt_write(cstr, (*C.uchar)(unsafe.Pointer(req.data)), C.uint(req.offset), C.int(req.size)))
-			if status == -1 {
+			defer C.free(cData)
+			status := int(C.ckpt_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
+			if status == -1 && req.resend > 0 {
+				req.resend--
 				q.push(req)
 			}
 		}
