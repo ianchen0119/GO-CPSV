@@ -14,7 +14,7 @@ type Vertex struct {
 }
 
 func main() {
-	cpsv.Start()
+	cpsv.Start("safCkpt=TEST1,safApp=safCkptService")
 	len := cpsv.GetSize(Vertex{})
 
 	fmt.Scanln()

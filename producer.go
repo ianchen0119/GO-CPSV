@@ -14,7 +14,7 @@ type Vertex struct {
 }
 
 func main() {
-	cpsv.Start()
+	cpsv.Start("safCkpt=TEST1,safApp=safCkptService")
 	v := &Vertex{X: 15, Y: 23}
 	len := cpsv.GetSize(Vertex{})
 	wbuf := C.GoBytes(unsafe.Pointer(v), C.int(len))

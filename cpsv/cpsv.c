@@ -12,11 +12,11 @@ SaUint32T erroneousVectorIndex;
 const void *initialData = "Default data in the section";
 SaTimeT timeout = 1000000000;
 
-Status cpsv_ckpt_init(){
+Status cpsv_ckpt_init(char* newName){
 	SaAisErrorT rc;
 	memset(&ckptName, 0, 255);
-	ckptName.length = strlen(DEMO_CKPT_NAME);
-	memcpy(ckptName.value, DEMO_CKPT_NAME, strlen(DEMO_CKPT_NAME));
+	ckptName.length = strlen(newName);
+	memcpy(ckptName.value, newName, strlen(newName));
 
 	callbk.saCkptCheckpointOpenCallback = AppCkptOpenCallback;
 	callbk.saCkptCheckpointSynchronizeCallback = AppCkptSyncCallback;
@@ -31,8 +31,6 @@ Status cpsv_ckpt_init(){
 		printf("Failed \n");
 		return -1;
 	}
-	// ckptCreateAttr.creationFlags =
-	//     SA_CKPT_CHECKPOINT_COLLOCATED | SA_CKPT_WR_ACTIVE_REPLICA;
 	ckptCreateAttr.creationFlags = SA_CKPT_WR_ALL_REPLICAS;
 	ckptCreateAttr.checkpointSize = 1024;
 	ckptCreateAttr.retentionDuration = 100000;
@@ -97,8 +95,8 @@ unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize){
 	printf("Section-Id = %s ....\n", readVector.sectionId.id);
 	rc = saCkptCheckpointRead(checkpointHandle, &readVector, 1,
 					&erroneousVectorIndex);
-	printf("Checkpoint Data Read = \"%d\"\n",
-		    *(int*) readVector.dataBuffer);
+	printf("Checkpoint Data Read = \"%s\"\n",
+		    (char*) readVector.dataBuffer);
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 		return read_buff;
@@ -145,10 +143,10 @@ Status cpsv_sync_write(char* sectionId, unsigned char* data, SaOffsetT offset, i
 	writeVector.dataOffset = offset;
 	writeVector.readSize = 0;
 
-	printf("Writing to Checkpoint %s ....\n", DEMO_CKPT_NAME);
+	printf("Writing to Checkpoint %s ....\n", ckptName.value);
 	printf("Section-Id = %s ....\n", writeVector.sectionId.id);
-	printf("CheckpointData being written = \"%d\"\n",
-		    *(int*) writeVector.dataBuffer);
+	printf("CheckpointData being written = \"%s\"\n",
+		    (char*) writeVector.dataBuffer);
 	printf("DataOffset = %llu ....\n", writeVector.dataOffset);
 	rc = saCkptCheckpointWrite(checkpointHandle, &writeVector, 1,
 					&erroneousVectorIndex);
