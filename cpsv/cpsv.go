@@ -57,6 +57,7 @@ func Store(sectionId string, data []byte, size int, offset int) {
 	newReq.offset = offset
 	newReq.reqType = Sync
 	newReq.size = size
+	newReq.resend = 3
 	q.push(newReq)
 }
 

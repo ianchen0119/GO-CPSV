@@ -13,6 +13,7 @@ type req struct {
 	size      int
 	offset    int
 	reqType   int
+	resend    int
 }
 
 type eventQ struct {
