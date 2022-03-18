@@ -13,7 +13,11 @@ static void ckpt_destroy(){
 }
 
 static unsigned char* ckpt_read(char* sectionId, unsigned int offset, int dataSize){
-	return cpsv_sync_read(sectionId, offset, dataSize);
+	return cpsv_sync_read(sectionId, offset, dataSize, 1, (void*) 0);
+}
+
+static unsigned char* ckpt_non_fixed_read(char* sectionId, int* dataSizePtr){
+	return cpsv_sync_read(sectionId, 0, 4, 0, dataSizePtr);
 }
 */
 import "C"
@@ -65,11 +69,36 @@ func Store(sectionId string, data []byte, size int, offset int) {
 	q.push(newReq)
 }
 
+func NonFixedStore(sectionId string, data []byte) {
+	var newReq req
+
+	newReq.sectionId = sectionId
+	newReq.data = data
+	newReq.offset = 4
+	newReq.reqType = Sync
+	newReq.size = 0
+	newReq.resend = 3
+	q.push(newReq)
+}
+
 // load data from ckpt
 func Load(sectionId string, offset uint32, dataSize int) ([]byte, error) {
 	cStr := C.CString(sectionId)
 	data := C.ckpt_read(cStr,
 		C.uint(offset), C.int(dataSize))
+	defer C.free(unsafe.Pointer(cStr))
+	if data != nil {
+		defer C.free(unsafe.Pointer(data))
+		return C.GoBytes(unsafe.Pointer(data), C.int(dataSize)), nil
+	}
+	return make([]byte, dataSize), errors.New("No data found")
+}
+
+func NonFixedLoad(sectionId string) ([]byte, error) {
+	dataSize := 0
+	dataSizePtr := (*C.int)(unsafe.Pointer(&dataSize))
+	cStr := C.CString(sectionId)
+	data := C.ckpt_non_fixed_read(cStr, dataSizePtr)
 	defer C.free(unsafe.Pointer(cStr))
 	if data != nil {
 		defer C.free(unsafe.Pointer(data))

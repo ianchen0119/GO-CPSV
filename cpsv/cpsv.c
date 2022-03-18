@@ -107,16 +107,54 @@ Status cpsv_ckpt_destroy(){
 	}
 }
 
-unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize){
+unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize, unsigned char isFixed, int* dataSizePtr){
 	SaAisErrorT rc;
 	SaCkptIOVectorElementT readVector;
-	unsigned char* read_buff = calloc(dataSize, sizeof(unsigned char));
+	unsigned char* get_size_buff;
+	unsigned char* read_buff;
+	if (isFixed != 1) {
+		/* 
+		 *  Store non-fixed length data
+		 *	for example: json, protobuf...
+		 */
+		get_size_buff = calloc(4, sizeof(unsigned char));
+		readVector.sectionId.id = (unsigned char *)sectionId;
+		readVector.sectionId.idLen = 2;
+		readVector.dataBuffer = get_size_buff;
+		readVector.dataSize = 4;
+		readVector.readSize = 4;
+		readVector.dataOffset = 0;
+		rc = saCkptCheckpointRead(checkpointHandle, &readVector, 1,
+					&erroneousVectorIndex);
+		printf("Section Data Size = \"%d\"\n",
+				*(int*) readVector.dataBuffer);
+		if (rc == SA_AIS_OK) {
+			printf("PASSED \n");
+		} else {
+			printf("Failed \n");
+			free(get_size_buff);
+			return (void*)0;
+		}
+	}
+	if (isFixed != 1) {
+		int nonFixedDataSize = (int) *get_size_buff;
+		*dataSizePtr = nonFixedDataSize;
+		read_buff = calloc(nonFixedDataSize, sizeof(unsigned char));
+		readVector.dataSize = nonFixedDataSize;
+		readVector.readSize = nonFixedDataSize;
+		readVector.dataOffset = 4;
+		free(get_size_buff);
+	} else {
+		read_buff = calloc(dataSize, sizeof(unsigned char));
+		readVector.dataSize = dataSize;
+		readVector.readSize = dataSize;
+		readVector.dataOffset = offset;
+	}
+	
 	readVector.sectionId.id = (unsigned char *)sectionId;
 	readVector.sectionId.idLen = 2;
 	readVector.dataBuffer = read_buff;
-	readVector.dataSize = dataSize;
-	readVector.readSize = dataSize;
-	readVector.dataOffset = offset;
+
 
 	printf("Section-Id = %s ....\n", readVector.sectionId.id);
 	rc = saCkptCheckpointRead(checkpointHandle, &readVector, 1,
