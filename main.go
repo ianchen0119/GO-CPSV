@@ -8,15 +8,16 @@ import (
 	"github.com/ianchen0119/GO-CPSV/cpsv"
 )
 
-type Vertex struct {
+type Location struct {
 	X int32
 	Y int32
+	Z int32
 }
 
 func main() {
 	cpsv.Start("safCkpt=TEST1,safApp=safCkptService")
-	v := &Vertex{X: 25, Y: 23}
-	len := cpsv.GetSize(Vertex{})
+	v := &Location{X: 25, Y: 23, Z: 50}
+	len := cpsv.GetSize(Location{})
 	wbuf := cpsv.GoBytes(unsafe.Pointer(v), len)
 
 	cpsv.NonFixedStore("d1", wbuf, int(len))
@@ -26,8 +27,8 @@ func main() {
 	readData, err := cpsv.NonFixedLoad("d1")
 
 	if err == nil {
-		var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
-		fmt.Printf("X: %d, Y:%d\n", bufV.X, bufV.Y)
+		var bufV *Location = *(**Location)(unsafe.Pointer(&readData))
+		fmt.Printf("X: %d, Y:%d, Z: %d\n", bufV.X, bufV.Y, bufV.Z)
 	} else {
 		fmt.Println("got errors:", err)
 	}

@@ -198,6 +198,8 @@ Status cpsv_sync_write(char* sectionId, unsigned char* data, SaOffsetT offset, i
 				initialData, 28);
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
+	} else if (rc == SA_AIS_ERR_EXIST) {
+		printf("Section is already exist.\n");
 	} else {
 		goto err;
 	}

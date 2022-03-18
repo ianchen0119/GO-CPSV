@@ -34,6 +34,7 @@ func TestStore_1(t *testing.T) {
 		var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
 		if bufV.X != v.X && bufV.Y != newY {
 			t.Error("exception: readData is not expected")
+			fmt.Printf("X: %d, Y: %d", bufV.X, bufV.Y)
 		}
 	} else {
 		t.Error("got errors:", err)

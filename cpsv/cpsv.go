@@ -62,7 +62,7 @@ func Store(sectionId string, data []byte, size int, offset int) {
 
 	newReq.sectionId = sectionId
 	newReq.data = data
-	newReq.offset = 0
+	newReq.offset = offset
 	newReq.reqType = Fixed
 	newReq.size = size
 	newReq.resend = 3
