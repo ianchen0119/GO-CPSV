@@ -16,6 +16,6 @@ void AppCkptSyncCallback(SaInvocationT invocation, SaAisErrorT error);
 Status cpsv_ckpt_init(char* newName);
 Status cpsv_ckpt_destroy();
 unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize, unsigned char isFixed, int* dataSizePtr);
-Status cpsv_sync_write(char* sectionId, unsigned char* data, SaOffsetT offset, int dataSize);
+Status cpsv_sync_write(char* sectionId, unsigned char* data, SaOffsetT offset, int dataSize, unsigned char isFixed);
 
 #endif

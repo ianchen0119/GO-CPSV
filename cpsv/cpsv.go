@@ -62,21 +62,21 @@ func Store(sectionId string, data []byte, size int, offset int) {
 
 	newReq.sectionId = sectionId
 	newReq.data = data
-	newReq.offset = offset
-	newReq.reqType = Sync
+	newReq.offset = 0
+	newReq.reqType = Fixed
 	newReq.size = size
 	newReq.resend = 3
 	q.push(newReq)
 }
 
-func NonFixedStore(sectionId string, data []byte) {
+func NonFixedStore(sectionId string, data []byte, size int) {
 	var newReq req
 
 	newReq.sectionId = sectionId
 	newReq.data = data
 	newReq.offset = 4
-	newReq.reqType = Sync
-	newReq.size = 0
+	newReq.reqType = NonFixed
+	newReq.size = size
 	newReq.resend = 3
 	q.push(newReq)
 }

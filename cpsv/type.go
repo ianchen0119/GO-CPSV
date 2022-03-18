@@ -3,8 +3,8 @@ package cpsv
 import "C"
 
 const (
-	Async int = 0
-	Sync  int = 1
+	NonFixed int = 0
+	Fixed  int = 1
 )
 
 type req struct {

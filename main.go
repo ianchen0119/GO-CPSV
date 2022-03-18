@@ -15,23 +15,24 @@ type Vertex struct {
 
 func main() {
 	cpsv.Start("safCkpt=TEST1,safApp=safCkptService")
-	v := &Vertex{X: 15, Y: 23}
+	v := &Vertex{X: 25, Y: 23}
 	len := cpsv.GetSize(Vertex{})
-	wbuf := C.GoBytes(unsafe.Pointer(v), C.int(len))
+	wbuf := cpsv.GoBytes(unsafe.Pointer(v), len)
 
-	cpsv.Store("d1", wbuf, int(len), 0)
+	cpsv.NonFixedStore("d1", wbuf, int(len))
 
 	fmt.Scanln()
 
-	readData, err := cpsv.Load("d1", 0, len)
+	readData, err := cpsv.NonFixedLoad("d1")
+
 	if err == nil {
 		var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
-		fmt.Scanln()
-
 		fmt.Printf("X: %d, Y:%d\n", bufV.X, bufV.Y)
 	} else {
-		fmt.Println(err)
-		fmt.Scanln()
+		fmt.Println("got errors:", err)
 	}
+
+	fmt.Scanln()
+
 	cpsv.Destroy()
 }

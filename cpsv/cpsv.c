@@ -66,7 +66,7 @@ Status cpsv_ckpt_init(char* newName){
 
 	ckptOpenFlags = SA_CKPT_CHECKPOINT_CREATE | SA_CKPT_CHECKPOINT_READ |
 			SA_CKPT_CHECKPOINT_WRITE;
-	printf("Opening Collocated Checkpoint = %s with create flags....\n",
+	printf("Opening Non-Collocated Checkpoint = %s with create flags....\n",
 	       ckptName.value);
 	rc = saCkptCheckpointOpen(ckptHandle, &ckptName, &ckptCreateAttr,
 				  ckptOpenFlags, timeout, &checkpointHandle);
@@ -110,17 +110,18 @@ Status cpsv_ckpt_destroy(){
 unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize, unsigned char isFixed, int* dataSizePtr){
 	SaAisErrorT rc;
 	SaCkptIOVectorElementT readVector;
-	unsigned char* get_size_buff;
+	int* sizeBuf;
 	unsigned char* read_buff;
 	if (isFixed != 1) {
 		/* 
 		 *  Store non-fixed length data
 		 *	for example: json, protobuf...
 		 */
-		get_size_buff = calloc(4, sizeof(unsigned char));
+		sizeBuf = (int*) malloc(sizeof(int));
+		*sizeBuf = 4;
 		readVector.sectionId.id = (unsigned char *)sectionId;
 		readVector.sectionId.idLen = 2;
-		readVector.dataBuffer = get_size_buff;
+		readVector.dataBuffer = (unsigned char *)sizeBuf;
 		readVector.dataSize = 4;
 		readVector.readSize = 4;
 		readVector.dataOffset = 0;
@@ -132,18 +133,19 @@ unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize, u
 			printf("PASSED \n");
 		} else {
 			printf("Failed \n");
-			free(get_size_buff);
+			free(sizeBuf);
 			return (void*)0;
 		}
 	}
 	if (isFixed != 1) {
-		int nonFixedDataSize = (int) *get_size_buff;
+		int nonFixedDataSize = *sizeBuf;
+		printf("nonFixedDataSize: %d\n", *sizeBuf);
 		*dataSizePtr = nonFixedDataSize;
 		read_buff = calloc(nonFixedDataSize, sizeof(unsigned char));
 		readVector.dataSize = nonFixedDataSize;
 		readVector.readSize = nonFixedDataSize;
 		readVector.dataOffset = 4;
-		free(get_size_buff);
+		free(sizeBuf);
 	} else {
 		read_buff = calloc(dataSize, sizeof(unsigned char));
 		readVector.dataSize = dataSize;
@@ -173,7 +175,7 @@ unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize, u
 		return (void*)0;
 }
 
-Status cpsv_sync_write(char* sectionId, unsigned char* data, SaOffsetT offset, int dataSize){
+Status cpsv_sync_write(char* sectionId, unsigned char* data, SaOffsetT offset, int dataSize, unsigned char isFixed){
 	SaAisErrorT rc;
 	SaCkptIOVectorElementT writeVector;
 
@@ -200,11 +202,33 @@ Status cpsv_sync_write(char* sectionId, unsigned char* data, SaOffsetT offset, i
 		goto err;
 	}
 
+	if (isFixed != 1) {
+		int* sizeBuf = (int*) malloc(sizeof(int));
+		*sizeBuf = dataSize;
+		writeVector.sectionId.id = (unsigned char *)sectionId;
+		writeVector.sectionId.idLen = strlen(sectionId);
+		writeVector.dataBuffer = (unsigned char *)sizeBuf;
+		writeVector.dataSize = 4;
+		writeVector.dataOffset = 0;
+		writeVector.readSize = 0;
+		rc = saCkptCheckpointWrite(checkpointHandle, &writeVector, 1,
+						&erroneousVectorIndex);
+		if (rc != SA_AIS_OK) {
+			goto err;
+		}
+		free(sizeBuf);
+	} 
+
+	if (isFixed != 1) {
+		writeVector.dataOffset = 4;
+	} else {
+		writeVector.dataOffset = offset;
+	}
+	
 	writeVector.sectionId.id = (unsigned char *)sectionId;
 	writeVector.sectionId.idLen = strlen(sectionId);
 	writeVector.dataBuffer = data;
 	writeVector.dataSize = dataSize;
-	writeVector.dataOffset = offset;
 	writeVector.readSize = 0;
 
 	printf("Writing to Checkpoint %s ....\n", ckptName.value);
