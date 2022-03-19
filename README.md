@@ -7,10 +7,29 @@ please refer the link below:
 
 ## Usage
 
+### Run Example
+
 ```sh
 $ git clone https://github.com/ianchen0119/GO-CPSV.git
 $ cd GO-CPSV
-$ export GODEBUG=cgocheck=0
 $ go get github.com/ianchen0119/GO-CPSV/cpsv
 $ go run main.go
+```
+
+### Go module
+
+```sh
+$ cd YOUR_PROJECT
+$ go get github.com/ianchen0119/GO-CPSV/cpsv
+```
+
+in your program:
+```go=
+import (
+  "fmt"
+  "github.com/ianchen0119/GO-CPSV/cpsv"
+  // ...
+)
+
+// ...
 ```
