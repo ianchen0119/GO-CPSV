@@ -58,11 +58,11 @@ Status cpsv_ckpt_init(char* newName){
 		return -1;
 	}
 	ckptCreateAttr.creationFlags = SA_CKPT_WR_ALL_REPLICAS;
-	ckptCreateAttr.checkpointSize = 1024;
+	ckptCreateAttr.checkpointSize = SECTIONS * SECTION_SIZE;
 	ckptCreateAttr.retentionDuration = 100000;
-	ckptCreateAttr.maxSections = 20;
-	ckptCreateAttr.maxSectionSize = 1000;
-	ckptCreateAttr.maxSectionIdSize = 20;
+	ckptCreateAttr.maxSections = SECTIONS;
+	ckptCreateAttr.maxSectionSize = SECTION_SIZE;
+	ckptCreateAttr.maxSectionIdSize = 50;
 
 	ckptOpenFlags = SA_CKPT_CHECKPOINT_CREATE | SA_CKPT_CHECKPOINT_READ |
 			SA_CKPT_CHECKPOINT_WRITE;

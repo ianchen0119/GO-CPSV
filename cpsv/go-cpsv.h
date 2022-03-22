@@ -6,6 +6,10 @@
 #include <unistd.h>
 #include <saCkpt.h>
 #include <time.h>
+#include <limits.h>
+
+#define SECTION_SIZE 20000
+#define SECTIONS 100000
 
 #define Status int
 
