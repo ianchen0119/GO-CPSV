@@ -38,6 +38,47 @@ SaUint32T erroneousVectorIndex;
 const void *initialData = "Default data in the section";
 SaTimeT timeout = 1000000000;
 
+Status cpsv_ckpt_init_with_section_number(char* newName, int sections, int sectionSize){
+	SaAisErrorT rc;
+	memset(&ckptName, 0, 255);
+	ckptName.length = strlen(newName);
+	memcpy(ckptName.value, newName, strlen(newName));
+
+	callbk.saCkptCheckpointOpenCallback = AppCkptOpenCallback;
+	callbk.saCkptCheckpointSynchronizeCallback = AppCkptSyncCallback;
+	version.releaseCode = 'B';
+	version.majorVersion = 2;
+	version.minorVersion = 2;
+	printf("Initialising With Checkpoint Service....\n");
+	rc = saCkptInitialize(&ckptHandle, &callbk, &version);
+	if (rc == SA_AIS_OK) {
+		printf("PASSED \n");
+	} else {
+		printf("Failed \n");
+		return -1;
+	}
+	ckptCreateAttr.creationFlags = SA_CKPT_WR_ALL_REPLICAS;
+	ckptCreateAttr.checkpointSize = sections * sectionSize;
+	ckptCreateAttr.retentionDuration = 100000;
+	ckptCreateAttr.maxSections = sections;
+	ckptCreateAttr.maxSectionSize = sectionSize;
+	ckptCreateAttr.maxSectionIdSize = 50;
+
+	ckptOpenFlags = SA_CKPT_CHECKPOINT_CREATE | SA_CKPT_CHECKPOINT_READ |
+			SA_CKPT_CHECKPOINT_WRITE;
+	printf("Opening Non-Collocated Checkpoint = %s with create flags....\n",
+	       ckptName.value);
+	rc = saCkptCheckpointOpen(ckptHandle, &ckptName, &ckptCreateAttr,
+				  ckptOpenFlags, timeout, &checkpointHandle);
+	if (rc == SA_AIS_OK) {
+		printf("PASSED \n");
+		return 0;
+	} else {
+		printf("Failed \n");
+		return -1;
+	}
+}
+
 Status cpsv_ckpt_init(char* newName){
 	SaAisErrorT rc;
 	memset(&ckptName, 0, 255);

@@ -8,6 +8,11 @@ package cpsv
 static void ckpt_init(char* ckptName){
 	cpsv_ckpt_init(ckptName);
 }
+
+static void ckpt_init_with_section(char* newName, int sections, int sectionSize){
+	cpsv_ckpt_init_with_section_number(newName, sections, sectionSize);
+}
+
 static void ckpt_destroy(){
 	cpsv_ckpt_destroy();
 }
@@ -31,6 +36,27 @@ import (
 	"unsafe"
 	"errors"
 )
+
+func StartWithSectionConfig(ckptName string, sections int, secitonSize int) {
+	fmt.Println("Starting GO CPSV...")
+	cStr := C.CString(ckptName)
+	defer C.free(unsafe.Pointer(cStr))
+	
+	eventQInit()
+	C.ckpt_init_with_section(cStr, C.int(sections), C.int(secitonSize))
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		sig := <-sigs
+		fmt.Println("Signal:")
+		fmt.Println(sig)
+		C.ckpt_destroy()
+		os.Exit(0)
+	}()
+
+	go Dispatcher()
+}
 
 func Start(ckptName string) {
 	fmt.Println("Starting GO CPSV...")
