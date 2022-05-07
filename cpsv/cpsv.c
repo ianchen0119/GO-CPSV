@@ -161,7 +161,7 @@ unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize, u
 		sizeBuf = (int*) malloc(sizeof(int));
 		*sizeBuf = 4;
 		readVector.sectionId.id = (unsigned char *)sectionId;
-		readVector.sectionId.idLen = 2;
+		readVector.sectionId.idLen = strlen(sectionId);
 		readVector.dataBuffer = (unsigned char *)sizeBuf;
 		readVector.dataSize = 4;
 		readVector.readSize = 4;
@@ -195,7 +195,7 @@ unsigned char* cpsv_sync_read(char* sectionId, SaOffsetT offset, int dataSize, u
 	}
 	
 	readVector.sectionId.id = (unsigned char *)sectionId;
-	readVector.sectionId.idLen = 2;
+	readVector.sectionId.idLen = strlen(sectionId);
 	readVector.dataBuffer = read_buff;
 
 
