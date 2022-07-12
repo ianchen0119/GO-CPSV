@@ -54,8 +54,7 @@ Status cpsv_ckpt_init_with_section_number(char* newName, int sections, int secti
 	if (rc == SA_AIS_OK) {
 		printf("PASSED \n");
 	} else {
-		printf("Failed \n");
-		return -1;
+		goto err;
 	}
 	ckptCreateAttr.creationFlags = SA_CKPT_WR_ALL_REPLICAS;
 	ckptCreateAttr.checkpointSize = sections * sectionSize;
@@ -74,77 +73,33 @@ Status cpsv_ckpt_init_with_section_number(char* newName, int sections, int secti
 		printf("PASSED \n");
 		return 0;
 	} else {
-		printf("Failed \n");
-		return -1;
+		goto err;
 	}
+
+	err:
+	printf("Failed \n");
+	return -1;
 }
 
 Status cpsv_ckpt_init(char* newName){
-	SaAisErrorT rc;
-	memset(&ckptName, 0, 255);
-	ckptName.length = strlen(newName);
-	memcpy(ckptName.value, newName, strlen(newName));
-
-	callbk.saCkptCheckpointOpenCallback = AppCkptOpenCallback;
-	callbk.saCkptCheckpointSynchronizeCallback = AppCkptSyncCallback;
-	version.releaseCode = 'B';
-	version.majorVersion = 2;
-	version.minorVersion = 2;
-	printf("Initialising With Checkpoint Service....\n");
-	rc = saCkptInitialize(&ckptHandle, &callbk, &version);
-	if (rc == SA_AIS_OK) {
-		printf("PASSED \n");
-	} else {
-		printf("Failed \n");
-		return -1;
-	}
-	ckptCreateAttr.creationFlags = SA_CKPT_WR_ALL_REPLICAS;
-	ckptCreateAttr.checkpointSize = SECTIONS * SECTION_SIZE;
-	ckptCreateAttr.retentionDuration = 100000;
-	ckptCreateAttr.maxSections = SECTIONS;
-	ckptCreateAttr.maxSectionSize = SECTION_SIZE;
-	ckptCreateAttr.maxSectionIdSize = 50;
-
-	ckptOpenFlags = SA_CKPT_CHECKPOINT_CREATE | SA_CKPT_CHECKPOINT_READ |
-			SA_CKPT_CHECKPOINT_WRITE;
-	printf("Opening Non-Collocated Checkpoint = %s with create flags....\n",
-	       ckptName.value);
-	rc = saCkptCheckpointOpen(ckptHandle, &ckptName, &ckptCreateAttr,
-				  ckptOpenFlags, timeout, &checkpointHandle);
-	if (rc == SA_AIS_OK) {
-		printf("PASSED \n");
-		return 0;
-	} else {
-		printf("Failed \n");
-		return -1;
-	}
+	return cpsv_ckpt_init_with_section_number(newName, SECTIONS, SECTION_SIZE);
 }
 
 Status cpsv_ckpt_destroy(){
 	SaAisErrorT rc;
-	printf("Unlink My Checkpoint ....\t");
 	rc = saCkptCheckpointUnlink(ckptHandle, &ckptName);
-	if (rc == SA_AIS_OK){
-		printf("PASSED \n");
-	} else {
-		printf("Failed \n");
-	}		
-	printf("Ckpt Closed ....\t");
-	rc = saCkptCheckpointClose(checkpointHandle);
-	if (rc == SA_AIS_OK) {
-		printf("PASSED \n");
-	} else {
-		printf("Failed \n");
+	if (rc != SA_AIS_OK){
+		printf("Unlink My Checkpoint ...Failed \n");
 	}
 
-	printf("Ckpt Finalize being called ....\t");
+	rc = saCkptCheckpointClose(checkpointHandle);
+	if (rc != SA_AIS_OK){
+		printf("Ckpt Closed ...Failed \n");
+	}
+
 	rc = saCkptFinalize(ckptHandle);
-	if (rc == SA_AIS_OK) {
-		printf("PASSED \n");
-		return 0;
-	} else {
-		printf("Failed \n");
-		return -1;
+	if (rc != SA_AIS_OK){
+		printf("Ckpt Finalize ...Failed \n");
 	}
 }
 
