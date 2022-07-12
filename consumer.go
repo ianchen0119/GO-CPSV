@@ -8,13 +8,18 @@ import (
 	"github.com/ianchen0119/GO-CPSV/cpsv"
 )
 
+type Vertex struct {
+	X int32
+	Y int32
+}
+
 func main() {
 	cpsv.Start("safCkpt=TEST1,safApp=safCkptService")
 	len := cpsv.GetSize(Vertex{})
 
 	fmt.Scanln()
 
-	readData,err := cpsv.Load("d1", 0, len)
+	readData, err := cpsv.Load("d1", 0, len)
 	if err == nil {
 		var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
 		fmt.Scanln()
