@@ -3,7 +3,8 @@ package main
 import "C"
 import (
 	"fmt"
-	// "unsafe"
+	"time"
+
 	"encoding/json"
 
 	"github.com/ianchen0119/GO-CPSV/cpsv"
@@ -16,18 +17,18 @@ type Location struct {
 }
 
 func main() {
-	cpsv.Start("safCkpt=TEST1,safApp=safCkptService")
-	loc := &Location{X: 25, Y: 23, Z: 50}
+	cpsv.Start("safCkpt=TEST2,safApp=safCkptService")
+	loc := Location{X: 25, Y: 23, Z: 50}
 	jsonLoc, _ := json.Marshal(loc)
 
 	len := len(jsonLoc)
 	fmt.Println(jsonLoc)
 
-	cpsv.NonFixedStore("d1", jsonLoc, int(len))
+	cpsv.NonFixedStore("json-data", jsonLoc, int(len))
 
-	fmt.Scanln()
+	time.Sleep(3 * time.Second)
 
-	readData, err := cpsv.NonFixedLoad("d1")
+	readData, err := cpsv.NonFixedLoad("json-data")
 
 	if err == nil {
 		fmt.Println(readData)
@@ -38,7 +39,7 @@ func main() {
 		fmt.Println("got errors:", err)
 	}
 
-	fmt.Scanln()
+	time.Sleep(3 * time.Second)
 
 	cpsv.Destroy()
 }

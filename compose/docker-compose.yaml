@@ -1,49 +1,65 @@
 version: '3.8'
 
 services:
+
   SC-1:
     container_name: SC-1
-    command: bash -c "cd GO-CPSV && go run ./producer.go"
+    hostname: SC-1
+    command: bash -c "./setup.sh"
     image: local/go-cpsv
     cap_add:
       - NET_ADMIN
+    volumes:
+      - ../producer.go:/home/opensaf/GO-CPSV/demo.go
+      - ./setup.sh:/home/opensaf/setup.sh
+      - ./sharedfs:/etc/opensaf/sharedfs
     networks:
       privnet:
         aliases:
           - gocpsv.sc1.tw
-
+ 
   SC-2:
     container_name: SC-2
-    command: bash -c "cd GO-CPSV && go run ./consumer.go"
+    hostname: SC-2
+    command: bash -c "./setup.sh"
     image: local/go-cpsv
     cap_add:
       - NET_ADMIN
+    volumes:
+      - ../consumer.go:/home/opensaf/GO-CPSV/demo.go
+      - ./setup.sh:/home/opensaf/setup.sh
+      - ./sharedfs:/etc/opensaf/sharedfs
     networks:
       privnet:
         aliases:
           - gocpsv.sc2.tw
+    depends_on:
+     - SC-1
 
-  db:
-    container_name: mongodb
-    image: mongo
-    command: mongod --port 27017
-    expose:
-      - "27017"
+  PL-3:
+    container_name: PL-3
+    hostname: PL-3
+    command: bash -c "./setup.sh"
+    image: local/go-cpsv
+    cap_add:
+      - NET_ADMIN
     volumes:
-      - dbdata:/data/db
+      - ../json_example.go:/home/opensaf/GO-CPSV/demo.go
+      - ./setup_pl.sh:/home/opensaf/setup.sh
+      - ./sharedfs:/etc/opensaf/sharedfs
     networks:
       privnet:
         aliases:
-          - db
+          - gocpsv.pl1.tw
+    depends_on:
+     - SC-2
 
 networks:
   privnet:
     ipam:
       driver: default
-      config:
-        - subnet: 10.80.0.0/24
     driver_opts:
       com.docker.network.bridge.name: br-gocpsv
 
 volumes:
-  dbdata:
+  sharedfs:
