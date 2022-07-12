@@ -16,8 +16,12 @@ ADD https://raw.githubusercontent.com/adrian77/docker/master/opensaf/scripts/for
 RUN chmod u+x /sbin/tipc-config \
     && chmod u+x /etc/init.d/setup-opensaf-node
 
-# Packages needed for for runtime. Python is only used for generation of initial xml; but also for cluster resize.
-RUN apt-get update && apt-get install -y \
+# Dynamic part which can be sent via --build-arg version=5.2.GA
+ARG buildversion="5.2.GA"
+ARG configureflags="--enable-imm-pbe --enable-tipc"
+
+# Packages for development. Branch "default" will be build, which is the latest. One can also use opensaf-4.6.x | opensaf-4.5.x | opensaf-4.4.x | opensaf-4.3.x instead. 
+RUN apt-get update && apt-get install --no-install-recommends -y \
     sudo \
     sqlite3 \ 
     libxml2 \
@@ -25,20 +29,11 @@ RUN apt-get update && apt-get install -y \
     python2.7-minimal \ 
     net-tools \ 
     kmod \
-    golang \
+    ca-certificates \
+    mercurial gcc g++ libxml2-dev automake m4 autoconf libtool pkg-config make python-dev libsqlite3-dev binutils git wget \
     && apt-get autoremove -y \
     && apt-get clean \ 
     && rm /var/lib/apt/lists/*.lz4 \
-    &&  apt-get remove -y golang-1.6
-
-
-# Dynamic part which can be sent via --build-arg version=5.2.GA
-ARG buildversion="5.2.GA"
-ARG configureflags="--enable-imm-pbe --enable-tipc"
-
-# Packages for development. Branch "default" will be build, which is the latest. One can also use opensaf-4.6.x | opensaf-4.5.x | opensaf-4.4.x | opensaf-4.3.x instead. 
-RUN apt-get update && apt-get install -y \
-    mercurial gcc g++ libxml2-dev automake m4 autoconf libtool pkg-config make python-dev libsqlite3-dev binutils git wget \
     && cd /home/opensaf \
     && hg clone http://hg.code.sf.net/p/opensaf/staging opensaf-staging \
     && cd opensaf-* \
@@ -51,8 +46,9 @@ RUN apt-get update && apt-get install -y \
 
 #download golang-1.17
 Run wget https://dl.google.com/go/go1.17.8.linux-amd64.tar.gz && \
-    tar -C /usr/local -zxvf go1.17.8.linux-amd64.tar.gz &&\
-    mkdir -p /go/{bin,pkg,src}
+    tar -C /usr/local -zxvf go1.17.8.linux-amd64.tar.gz && \
+    mkdir -p /go/{bin,pkg,src} && \
+    rm go1.17.8.linux-amd64.tar.gz
     
 # download GO-CPSV
 RUN cd /home/opensaf \
