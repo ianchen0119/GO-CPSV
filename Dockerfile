@@ -11,8 +11,8 @@ RUN mkdir -p /home/opensaf/GO-CPSV
 WORKDIR /home/opensaf
 
 # Add binaries and scripts needing for runtime
-ADD https://raw.githubusercontent.com/adrian77/docker/master/opensaf/scripts/for-running/home/opensaf/setup-opensaf-node /etc/init.d/setup-opensaf-node
-ADD https://raw.githubusercontent.com/adrian77/docker/master/opensaf/scripts/for-running/sbin/tipc-config /sbin/tipc-config
+ADD https://gist.githubusercontent.com/ianchen0119/dd9aa54617c56cc57ae19962adb24176/raw/b74d6a805fe6d3b40d0a8010ab74bde2fc4e793d/setup-opensaf-node /etc/init.d/setup-opensaf-node
+ADD https://raw.githubusercontent.com/ianchen0119/GO-CPSV/master/tipc-config /sbin/tipc-config
 
 RUN chmod u+x /sbin/tipc-config \
     && chmod u+x /etc/init.d/setup-opensaf-node
