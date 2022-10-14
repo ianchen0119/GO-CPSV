@@ -50,7 +50,6 @@ func startWithSectionConfig(ckptName string, sections int, secitonSize int) *Ckp
 	cStr := C.CString(ckptName)
 	defer C.free(unsafe.Pointer(cStr))
 
-	eventQInit()
 	C.ckpt_init_with_section(cStr, C.int(sections), C.int(secitonSize))
 
 	sigs := make(chan os.Signal, 1)
@@ -67,6 +66,7 @@ func startWithSectionConfig(ckptName string, sections int, secitonSize int) *Ckp
 
 	return &CkptOps{
 		startTime: time.Now(),
+		q:         eventQInit(),
 	}
 }
 
@@ -75,7 +75,6 @@ func start(ckptName string) *CkptOps {
 	cStr := C.CString(ckptName)
 	defer C.free(unsafe.Pointer(cStr))
 
-	eventQInit()
 	C.ckpt_init(cStr)
 
 	sigs := make(chan os.Signal, 1)
@@ -92,6 +91,7 @@ func start(ckptName string) *CkptOps {
 
 	return &CkptOps{
 		startTime: time.Now(),
+		q:         eventQInit(),
 	}
 }
 
