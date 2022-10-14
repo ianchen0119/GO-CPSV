@@ -28,20 +28,28 @@ static unsigned char* ckpt_non_fixed_read(char* sectionId, int* dataSizePtr){
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"reflect"
 	"syscall"
+	"time"
 	"unsafe"
-	"errors"
 )
 
-func StartWithSectionConfig(ckptName string, sections int, secitonSize int) {
+var _ storageAPI = (*CkptOps)(nil)
+
+type CkptOps struct {
+	startTime time.Time
+	q         chan req
+}
+
+func startWithSectionConfig(ckptName string, sections int, secitonSize int) *CkptOps {
 	fmt.Println("Starting GO CPSV...")
 	cStr := C.CString(ckptName)
 	defer C.free(unsafe.Pointer(cStr))
-	
+
 	eventQInit()
 	C.ckpt_init_with_section(cStr, C.int(sections), C.int(secitonSize))
 
@@ -56,13 +64,17 @@ func StartWithSectionConfig(ckptName string, sections int, secitonSize int) {
 	}()
 
 	go Dispatcher()
+
+	return &CkptOps{
+		startTime: time.Now(),
+	}
 }
 
-func Start(ckptName string) {
+func start(ckptName string) *CkptOps {
 	fmt.Println("Starting GO CPSV...")
 	cStr := C.CString(ckptName)
 	defer C.free(unsafe.Pointer(cStr))
-	
+
 	eventQInit()
 	C.ckpt_init(cStr)
 
@@ -77,13 +89,17 @@ func Start(ckptName string) {
 	}()
 
 	go Dispatcher()
+
+	return &CkptOps{
+		startTime: time.Now(),
+	}
 }
 
-func Destroy() {
+func (ckpt *CkptOps) destroy() {
 	C.ckpt_destroy()
 }
 
-func Store(sectionId string, data []byte, size int, offset int) {
+func (ckpt *CkptOps) store(sectionId string, data []byte, size int, offset int) {
 	var newReq req
 
 	newReq.sectionId = sectionId
@@ -92,10 +108,10 @@ func Store(sectionId string, data []byte, size int, offset int) {
 	newReq.reqType = Fixed
 	newReq.size = size
 	newReq.resend = 3
-	q.push(newReq)
+	ckpt.push(newReq)
 }
 
-func NonFixedStore(sectionId string, data []byte, size int) {
+func (ckpt *CkptOps) nonFixedStore(sectionId string, data []byte, size int) {
 	var newReq req
 
 	newReq.sectionId = sectionId
@@ -104,11 +120,11 @@ func NonFixedStore(sectionId string, data []byte, size int) {
 	newReq.reqType = NonFixed
 	newReq.size = size
 	newReq.resend = 3
-	q.push(newReq)
+	ckpt.push(newReq)
 }
 
 // load data from ckpt
-func Load(sectionId string, offset uint32, dataSize int) ([]byte, error) {
+func (ckpt *CkptOps) load(sectionId string, offset uint32, dataSize int) ([]byte, error) {
 	cStr := C.CString(sectionId)
 	data := C.ckpt_read(cStr,
 		C.uint(offset), C.int(dataSize))
@@ -120,7 +136,7 @@ func Load(sectionId string, offset uint32, dataSize int) ([]byte, error) {
 	return make([]byte, dataSize), errors.New("No data found")
 }
 
-func NonFixedLoad(sectionId string) ([]byte, error) {
+func (ckpt *CkptOps) nonFixedLoad(sectionId string) ([]byte, error) {
 	dataSize := 0
 	dataSizePtr := (*C.int)(unsafe.Pointer(&dataSize))
 	cStr := C.CString(sectionId)
@@ -133,11 +149,11 @@ func NonFixedLoad(sectionId string) ([]byte, error) {
 	return make([]byte, dataSize), errors.New("No data found")
 }
 
-func GetSize(i interface{}) int {
+func (ckpt *CkptOps) getSize(i interface{}) int {
 	size := reflect.TypeOf(i).Size()
 	return int(size)
 }
 
-func GoBytes(unsafePtr unsafe.Pointer, length int) []byte {
+func (ckpt *CkptOps) goBytes(unsafePtr unsafe.Pointer, length int) []byte {
 	return C.GoBytes(unsafePtr, C.int(length))
 }

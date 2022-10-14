@@ -7,6 +7,7 @@ LABEL image.description="Image containing opensaf middleware with basic services
 LABEL container.run="NODE=SC-1 && docker run -t --name \$NODE -h \$NODE -v /home/ianchen0119/sharedfs:/etc/opensaf/sharedfs -i <img>"
 
 RUN mkdir -p /home/opensaf
+RUN mkdir -p /home/opensaf/GO-CPSV
 WORKDIR /home/opensaf
 
 # Add binaries and scripts needing for runtime
@@ -49,10 +50,6 @@ Run wget https://dl.google.com/go/go1.17.8.linux-amd64.tar.gz && \
     tar -C /usr/local -zxvf go1.17.8.linux-amd64.tar.gz && \
     mkdir -p /go/{bin,pkg,src} && \
     rm go1.17.8.linux-amd64.tar.gz
-    
-# download GO-CPSV
-RUN cd /home/opensaf \
-    && git clone https://github.com/ianchen0119/GO-CPSV.git
 
 RUN groupadd opensaf && \
  useradd -r -g opensaf -d /var/run/opensaf -s /sbin/nologin -c "OpenSAF" opensaf && \
@@ -65,5 +62,7 @@ ENV GOPATH=/go
 ENV GOROOT=/usr/local/go    
 ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 ENV GO111MODULE=auto
+
+COPY ./. /home/opensaf/GO-CPSV
 
 CMD ["/bin/bash"]

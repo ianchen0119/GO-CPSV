@@ -4,7 +4,7 @@ import "C"
 
 const (
 	NonFixed int = 0
-	Fixed  int = 1
+	Fixed    int = 1
 )
 
 type req struct {
@@ -16,6 +16,4 @@ type req struct {
 	resend    int
 }
 
-type eventQ struct {
-	queue chan req
-}
+type eventQ chan req
