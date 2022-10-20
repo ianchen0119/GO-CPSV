@@ -18,9 +18,9 @@ import (
 	"unsafe"
 )
 
-func Dispatcher() {
+func (ckpt *CkptOps) Dispatcher() {
 	for {
-		req, ok := <-q.queue
+		req, ok := <-ckpt.q
 		if ok {
 			var status int
 			fmt.Println("handle event from eventQ")
@@ -35,10 +35,10 @@ func Dispatcher() {
 			} else {
 				status = int(C.ckpt_non_fixed_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
 			}
-			
+
 			if status == -1 && req.resend > 0 {
 				req.resend--
-				q.push(req)
+				ckpt.push(req)
 			}
 		}
 	}

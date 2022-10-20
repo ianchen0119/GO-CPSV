@@ -62,12 +62,14 @@ func startWithSectionConfig(ckptName string, sections int, secitonSize int) *Ckp
 		os.Exit(0)
 	}()
 
-	go Dispatcher()
-
-	return &CkptOps{
+	cpsv := &CkptOps{
 		startTime: time.Now(),
 		q:         eventQInit(),
 	}
+
+	go cpsv.Dispatcher()
+
+	return cpsv
 }
 
 func start(ckptName string) *CkptOps {
@@ -87,12 +89,14 @@ func start(ckptName string) *CkptOps {
 		os.Exit(0)
 	}()
 
-	go Dispatcher()
-
-	return &CkptOps{
+	cpsv := &CkptOps{
 		startTime: time.Now(),
 		q:         eventQInit(),
 	}
+
+	go cpsv.Dispatcher()
+
+	return cpsv
 }
 
 func (ckpt *CkptOps) destroy() {
