@@ -1,0 +1,31 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Compose
+      uses: ndeloof/install-compose-action@v0.0.1
+      with:
+        version: v2.1.0 # defaults to 'latest'
+        legacy: true    # will also install in PATH as `docker-compose`
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag local/go-cpsv
+    - name: Functionality Test
+      run: |
+        cd compose
+        docker-compose up &
+        sleep 100
+        docker-compose down
+        docker-compose rm
+        
