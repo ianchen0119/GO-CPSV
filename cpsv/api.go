@@ -1,6 +1,7 @@
 package cpsv
 
 import (
+	"fmt"
 	"sync"
 	"unsafe"
 )
@@ -11,6 +12,15 @@ type CheckPoint struct {
 }
 
 var globalCkpt CheckPoint
+
+func SetStorageProvider(collName string, db string) {
+	switch db {
+	case "cpsv":
+		Start(collName)
+	default:
+		fmt.Printf("%s is not supported", db)
+	}
+}
 
 func StartWithSectionConfig(ckptName string, sections int, secitonSize int) {
 	globalCkpt.mu.Lock()
