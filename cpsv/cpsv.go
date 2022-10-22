@@ -43,12 +43,18 @@ type CkptOps struct {
 	suctionSize int
 }
 
-func (ckpt *CkptOps) SetSectionNum(num int) {
-	ckpt.sectionNum = num
+type Option func(*CkptOps)
+
+func SetSectionNum(num int) Option {
+	return func(ckpt *CkptOps) {
+		ckpt.sectionNum = num
+	}
 }
 
-func (ckpt *CkptOps) SetSectionSize(size int) {
-	ckpt.suctionSize = size
+func SetSectionSize(size int) Option {
+	return func(ckpt *CkptOps) {
+		ckpt.suctionSize = size
+	}
 }
 
 func start(ckptName string, ops ...func(*CkptOps)) *CkptOps {
