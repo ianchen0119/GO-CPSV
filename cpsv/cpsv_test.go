@@ -1,10 +1,10 @@
 package cpsv
 
 import (
-	"testing"
 	"fmt"
-	"unsafe"
+	"testing"
 	"time"
+	"unsafe"
 )
 
 type Vertex struct {
@@ -12,38 +12,7 @@ type Vertex struct {
 	Y int32
 }
 
-func TestStartWithSectionConfig(t *testing.T) {	
-	StartWithSectionConfig("safCkpt=TEST1,safApp=safCkptService", 20, 100)
-	v := &Vertex{X: 15, Y: 23}
-	len := GetSize(Vertex{})
-	wbuf := GoBytes(unsafe.Pointer(v), len)
-
-	Store("d1", wbuf, int(len), 0)
-
-	time.Sleep(3 * time.Second)
-
-	var newY int32 = 20
-	newYByte := GoBytes(unsafe.Pointer(&newY), len)
-	Store("d1", newYByte, int(len), 4)
-
-	time.Sleep(3 * time.Second)
-
-	readData, err := Load("d1", 0, len)
-
-	if err == nil {
-		var bufV *Vertex = *(**Vertex)(unsafe.Pointer(&readData))
-		if bufV.X != v.X && bufV.Y != newY {
-			t.Error("exception: readData is not expected")
-			fmt.Printf("X: %d, Y: %d", bufV.X, bufV.Y)
-		}
-	} else {
-		t.Error("got errors:", err)
-	}
-
-	Destroy()
-}
-
-func TestStore_1(t *testing.T) {	
+func TestStore_1(t *testing.T) {
 	Start("safCkpt=TEST1,safApp=safCkptService")
 	v := &Vertex{X: 15, Y: 23}
 	len := GetSize(Vertex{})
@@ -74,7 +43,7 @@ func TestStore_1(t *testing.T) {
 	Destroy()
 }
 
-func TestStore_2(t *testing.T) {	
+func TestStore_2(t *testing.T) {
 	Start("safCkpt=TEST1,safApp=safCkptService")
 	v := &Vertex{X: 15, Y: 23}
 	len := GetSize(Vertex{})

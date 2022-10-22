@@ -81,10 +81,6 @@ Status cpsv_ckpt_init_with_section_number(char* newName, int sections, int secti
 	return -1;
 }
 
-Status cpsv_ckpt_init(char* newName){
-	return cpsv_ckpt_init_with_section_number(newName, SECTIONS, SECTION_SIZE);
-}
-
 Status cpsv_ckpt_destroy(){
 	SaAisErrorT rc;
 	rc = saCkptCheckpointUnlink(ckptHandle, &ckptName);

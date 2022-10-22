@@ -5,10 +5,6 @@ package cpsv
 #include "go-cpsv.h"
 #include <stdint.h>
 
-static void ckpt_init(char* ckptName){
-	cpsv_ckpt_init(ckptName);
-}
-
 static void ckpt_init_with_section(char* newName, int sections, int sectionSize){
 	cpsv_ckpt_init_with_section_number(newName, sections, sectionSize);
 }
@@ -41,16 +37,37 @@ import (
 var _ storageAPI = (*CkptOps)(nil)
 
 type CkptOps struct {
-	startTime time.Time
-	q         chan req
+	startTime   time.Time
+	q           chan req
+	sectionNum  int
+	suctionSize int
 }
 
-func startWithSectionConfig(ckptName string, sections int, secitonSize int) *CkptOps {
+func (ckpt *CkptOps) SetSectionNum(num int) {
+	ckpt.sectionNum = num
+}
+
+func (ckpt *CkptOps) SetSectionSize(size int) {
+	ckpt.suctionSize = size
+}
+
+func start(ckptName string, ops ...func(*CkptOps)) *CkptOps {
 	fmt.Println("Starting GO CPSV...")
 	cStr := C.CString(ckptName)
 	defer C.free(unsafe.Pointer(cStr))
 
-	C.ckpt_init_with_section(cStr, C.int(sections), C.int(secitonSize))
+	cpsv := &CkptOps{
+		startTime:   time.Now(),
+		q:           eventQInit(),
+		sectionNum:  100000,
+		suctionSize: 20000,
+	}
+
+	for _, op := range ops {
+		op(cpsv)
+	}
+
+	C.ckpt_init_with_section(cStr, C.int(cpsv.sectionNum), C.int(cpsv.suctionSize))
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -61,38 +78,6 @@ func startWithSectionConfig(ckptName string, sections int, secitonSize int) *Ckp
 		C.ckpt_destroy()
 		os.Exit(0)
 	}()
-
-	cpsv := &CkptOps{
-		startTime: time.Now(),
-		q:         eventQInit(),
-	}
-
-	go cpsv.Dispatcher()
-
-	return cpsv
-}
-
-func start(ckptName string) *CkptOps {
-	fmt.Println("Starting GO CPSV...")
-	cStr := C.CString(ckptName)
-	defer C.free(unsafe.Pointer(cStr))
-
-	C.ckpt_init(cStr)
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		sig := <-sigs
-		fmt.Println("Signal:")
-		fmt.Println(sig)
-		C.ckpt_destroy()
-		os.Exit(0)
-	}()
-
-	cpsv := &CkptOps{
-		startTime: time.Now(),
-		q:         eventQInit(),
-	}
 
 	go cpsv.Dispatcher()
 

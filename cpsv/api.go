@@ -22,16 +22,10 @@ func SetStorageProvider(collName string, db string) {
 	}
 }
 
-func StartWithSectionConfig(ckptName string, sections int, secitonSize int) {
+func Start(ckptName string, ops ...func(*CkptOps)) {
 	globalCkpt.mu.Lock()
 	defer globalCkpt.mu.Unlock()
-	globalCkpt.ops = startWithSectionConfig(ckptName, sections, secitonSize)
-}
-
-func Start(ckptName string) {
-	globalCkpt.mu.Lock()
-	defer globalCkpt.mu.Unlock()
-	globalCkpt.ops = start(ckptName)
+	globalCkpt.ops = start(ckptName, ops...)
 }
 
 func Destroy() {
