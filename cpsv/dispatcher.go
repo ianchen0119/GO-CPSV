@@ -20,25 +20,31 @@ import (
 
 func (ckpt *CkptOps) Dispatcher() {
 	for {
-		req, ok := <-ckpt.q
-		if ok {
-			var status int
-			fmt.Println("handle event from eventQ")
-			cstr := C.CString(req.sectionId)
-			cData := C.CBytes(req.data)
-			defer C.free(unsafe.Pointer(cstr))
-			defer C.free(cData)
+		select {
+		case <-ckpt.stopCh:
+			// notify the main thread that the dispatcher is stopped
+			defer close(ckpt.notifyCh)
+			return
+		case req, ok := <-ckpt.q:
+			if ok {
+				var status int
+				fmt.Println("handle event from eventQ")
+				cstr := C.CString(req.sectionId)
+				cData := C.CBytes(req.data)
+				defer C.free(unsafe.Pointer(cstr))
+				defer C.free(cData)
 
-			if req.reqType == Fixed {
-				fmt.Println("Fixed")
-				status = int(C.ckpt_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
-			} else {
-				status = int(C.ckpt_non_fixed_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
-			}
+				if req.reqType == Fixed {
+					fmt.Println("Fixed")
+					status = int(C.ckpt_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
+				} else {
+					status = int(C.ckpt_non_fixed_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
+				}
 
-			if status == -1 && req.resend > 0 {
-				req.resend--
-				ckpt.push(req)
+				if status == -1 && req.resend > 0 {
+					req.resend--
+					ckpt.push(req)
+				}
 			}
 		}
 	}

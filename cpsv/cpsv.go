@@ -41,6 +41,8 @@ type CkptOps struct {
 	q           chan req
 	sectionNum  int
 	suctionSize int
+	stopCh      chan struct{}
+	notifyCh    chan struct{}
 }
 
 type Option func(*CkptOps)
@@ -67,6 +69,8 @@ func start(ckptName string, ops ...func(*CkptOps)) *CkptOps {
 		q:           eventQInit(),
 		sectionNum:  100000,
 		suctionSize: 20000,
+		stopCh:      make(chan struct{}),
+		notifyCh:    make(chan struct{}),
 	}
 
 	for _, op := range ops {
@@ -91,6 +95,10 @@ func start(ckptName string, ops ...func(*CkptOps)) *CkptOps {
 }
 
 func (ckpt *CkptOps) destroy() {
+	// notify dispatcher to stop
+	close(ckpt.stopCh)
+	// wait for dispatcher to stop
+	<-ckpt.notifyCh
 	C.ckpt_destroy()
 }
 
