@@ -64,7 +64,8 @@ func testCPSVRead(times int) {
 }
 
 func main() {
-	cpsv.Start("safCkpt=TEST2,safApp=safCkptService", cpsv.SetSectionNum(100000), cpsv.SetSectionSize(2000))
+	cpsv.Start("safCkpt=TEST2,safApp=safCkptService",
+		cpsv.SetSectionNum(100000), cpsv.SetSectionSize(2000), cpsv.SetWorkerNum(10))
 
 	testSyncMap()
 	testCPSVWrite(100)

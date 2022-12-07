@@ -14,6 +14,7 @@ static int ckpt_non_fixed_write(char* sectionId, unsigned char* data, unsigned i
 */
 import "C"
 import (
+	"fmt"
 	"unsafe"
 )
 
@@ -41,7 +42,9 @@ func Worker(id int, jobs <-chan req, ckpt *CkptOps) {
 func (ckpt *CkptOps) Dispatcher() {
 
 	jobs := make(chan req, 100)
-	for w := 1; w <= 10; w++ {
+	fmt.Println("Dispatcher started, worker number: ", ckpt.workerNum)
+
+	for w := 1; w <= ckpt.workerNum; w++ {
 		go Worker(w, jobs, ckpt)
 	}
 

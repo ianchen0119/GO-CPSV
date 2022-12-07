@@ -41,11 +41,19 @@ type CkptOps struct {
 	q           chan req
 	sectionNum  int
 	suctionSize int
+	workerNum   int
+	resendMax   int
 	stopCh      chan struct{}
 	notifyCh    chan struct{}
 }
 
 type Option func(*CkptOps)
+
+func SetResendMax(max int) Option {
+	return func(ckpt *CkptOps) {
+		ckpt.resendMax = max
+	}
+}
 
 func SetSectionNum(num int) Option {
 	return func(ckpt *CkptOps) {
@@ -56,6 +64,12 @@ func SetSectionNum(num int) Option {
 func SetSectionSize(size int) Option {
 	return func(ckpt *CkptOps) {
 		ckpt.suctionSize = size
+	}
+}
+
+func SetWorkerNum(num int) Option {
+	return func(ckpt *CkptOps) {
+		ckpt.workerNum = num
 	}
 }
 
@@ -71,6 +85,7 @@ func start(ckptName string, ops ...func(*CkptOps)) *CkptOps {
 		suctionSize: 20000,
 		stopCh:      make(chan struct{}),
 		notifyCh:    make(chan struct{}),
+		workerNum:   3,
 	}
 
 	for _, op := range ops {
@@ -110,7 +125,7 @@ func (ckpt *CkptOps) store(sectionId string, data []byte, size int, offset int) 
 	newReq.offset = offset
 	newReq.reqType = Fixed
 	newReq.size = size
-	newReq.resend = 3
+	newReq.resend = ckpt.resendMax
 	ckpt.push(newReq)
 }
 
@@ -122,7 +137,7 @@ func (ckpt *CkptOps) nonFixedStore(sectionId string, data []byte, size int) {
 	newReq.offset = 4
 	newReq.reqType = NonFixed
 	newReq.size = size
-	newReq.resend = 3
+	newReq.resend = ckpt.resendMax
 	ckpt.push(newReq)
 }
 
