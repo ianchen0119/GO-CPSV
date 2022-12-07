@@ -2,7 +2,9 @@ package main
 
 import "C"
 import (
+	"context"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -63,9 +65,28 @@ func testCPSVRead(times int) {
 	fmt.Println("CPSV-R", "Start:", start, "End:", end, "Spent:", end-start, "Times:", times)
 }
 
+func success(ctx context.Context) {
+	// get the value from context
+	res, err := cpsv.GetResult(ctx)
+	if err != nil {
+		log.Fatalln("failed to get result", err)
+	} else {
+		log.Println("success", res.SecId, res.Data)
+	}
+}
+
+func fail(ctx context.Context) {
+	log.Println("fail")
+}
+
+func beforeUpdate(ctx context.Context) {
+	log.Println("beforeUpdate")
+}
+
 func main() {
 	cpsv.Start("safCkpt=TEST2,safApp=safCkptService",
-		cpsv.SetSectionNum(100000), cpsv.SetSectionSize(2000), cpsv.SetWorkerNum(10))
+		cpsv.SetSectionNum(100000), cpsv.SetSectionSize(2000),
+		cpsv.SetWorkerNum(10), cpsv.SetLifeCycleHooks(beforeUpdate, success, fail))
 
 	testSyncMap()
 	testCPSVWrite(100)

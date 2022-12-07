@@ -24,6 +24,7 @@ static unsigned char* ckpt_non_fixed_read(char* sectionId, int* dataSizePtr){
 import "C"
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -37,17 +38,45 @@ import (
 var _ storageAPI = (*CkptOps)(nil)
 
 type CkptOps struct {
-	startTime   time.Time
-	q           chan req
-	sectionNum  int
-	suctionSize int
-	workerNum   int
-	resendMax   int
-	stopCh      chan struct{}
-	notifyCh    chan struct{}
+	startTime    time.Time
+	q            chan req
+	sectionNum   int
+	suctionSize  int
+	workerNum    int
+	resendMax    int
+	stopCh       chan struct{}
+	notifyCh     chan struct{}
+	beforeUpdate func(ctx context.Context)
+	afterUpdate  func(ctx context.Context)
+	ifError      func(ctx context.Context)
 }
 
 type Option func(*CkptOps)
+
+type Result struct {
+	SecId string
+	Data  []byte
+}
+
+func GetResult(ctx context.Context) (*Result, error) {
+	req, ok := ctx.Value("req").(req)
+	if !ok {
+		return nil, errors.New("invalid request")
+	}
+	res := &Result{
+		SecId: req.sectionId,
+		Data:  req.data,
+	}
+	return res, nil
+}
+
+func SetLifeCycleHooks(beforeUpdate, afterUpdate, ifError func(ctx context.Context)) Option {
+	return func(ckpt *CkptOps) {
+		ckpt.beforeUpdate = beforeUpdate
+		ckpt.afterUpdate = afterUpdate
+		ckpt.ifError = ifError
+	}
+}
 
 func SetResendMax(max int) Option {
 	return func(ckpt *CkptOps) {
@@ -78,14 +107,20 @@ func start(ckptName string, ops ...func(*CkptOps)) *CkptOps {
 	cStr := C.CString(ckptName)
 	defer C.free(unsafe.Pointer(cStr))
 
+	defaultFunc := func(ctx context.Context) {
+	}
+
 	cpsv := &CkptOps{
-		startTime:   time.Now(),
-		q:           eventQInit(),
-		sectionNum:  100000,
-		suctionSize: 20000,
-		stopCh:      make(chan struct{}),
-		notifyCh:    make(chan struct{}),
-		workerNum:   3,
+		startTime:    time.Now(),
+		q:            eventQInit(),
+		sectionNum:   100000,
+		suctionSize:  20000,
+		stopCh:       make(chan struct{}),
+		notifyCh:     make(chan struct{}),
+		workerNum:    3,
+		beforeUpdate: defaultFunc,
+		ifError:      defaultFunc,
+		afterUpdate:  defaultFunc,
 	}
 
 	for _, op := range ops {

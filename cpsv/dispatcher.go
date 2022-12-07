@@ -14,6 +14,7 @@ static int ckpt_non_fixed_write(char* sectionId, unsigned char* data, unsigned i
 */
 import "C"
 import (
+	"context"
 	"fmt"
 	"unsafe"
 )
@@ -26,6 +27,9 @@ func Worker(id int, jobs <-chan req, ckpt *CkptOps) {
 		defer C.free(unsafe.Pointer(cstr))
 		defer C.free(cData)
 
+		ctx := context.Background()
+		ckpt.beforeUpdate(context.WithValue(ctx, "req", req))
+
 		if req.reqType == Fixed {
 			status = int(C.ckpt_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
 		} else {
@@ -35,6 +39,9 @@ func Worker(id int, jobs <-chan req, ckpt *CkptOps) {
 		if status == -1 && req.resend > 0 {
 			req.resend--
 			ckpt.push(req)
+			ckpt.ifError(context.WithValue(ctx, "req", req))
+		} else {
+			ckpt.afterUpdate(context.WithValue(ctx, "req", req))
 		}
 	}
 }
