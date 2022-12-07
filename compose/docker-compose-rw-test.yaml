@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+
+  SC-1:
+    container_name: SC-1
+    hostname: SC-1
+    command: bash -c "./setup.sh"
+    image: local/go-cpsv
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./test/rw_test.go:/home/opensaf/demo.go
+      - ./test/setup.sh:/home/opensaf/setup.sh
+      - ./sharedfs:/etc/opensaf/sharedfs
+    networks:
+      privnet:
+        aliases:
+          - gocpsv.pl1.tw
+
+networks:
+  privnet:
+    ipam:
+      driver: default
+    driver_opts:
+      com.docker.network.bridge.name: br-gocpsv
+
+volumes:
+  sharedfs:

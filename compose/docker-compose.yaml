@@ -10,8 +10,8 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
-      - ../producer.go:/home/opensaf/GO-CPSV/demo.go
-      - ./setup.sh:/home/opensaf/setup.sh
+      - ./topology/producer.go:/home/opensaf/demo.go
+      - ./topology/setup.sh:/home/opensaf/setup.sh
       - ./sharedfs:/etc/opensaf/sharedfs
     networks:
       privnet:
@@ -26,8 +26,8 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
-      - ../consumer.go:/home/opensaf/GO-CPSV/demo.go
-      - ./setup.sh:/home/opensaf/setup.sh
+      - ./topology/consumer.go:/home/opensaf/demo.go
+      - ./topology/setup.sh:/home/opensaf/setup.sh
       - ./sharedfs:/etc/opensaf/sharedfs
     networks:
       privnet:
@@ -44,8 +44,8 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
-      - ../json_example.go:/home/opensaf/GO-CPSV/demo.go
-      - ./setup_pl.sh:/home/opensaf/setup.sh
+      - ./topology/json_example.go:/home/opensaf/demo.go
+      - ./topology/setup_pl.sh:/home/opensaf/setup.sh
       - ./sharedfs:/etc/opensaf/sharedfs
     networks:
       privnet:
