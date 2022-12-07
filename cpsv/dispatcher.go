@@ -14,11 +14,37 @@ static int ckpt_non_fixed_write(char* sectionId, unsigned char* data, unsigned i
 */
 import "C"
 import (
-	"fmt"
 	"unsafe"
 )
 
+func Worker(id int, jobs <-chan req, ckpt *CkptOps) {
+	for req := range jobs {
+		var status int
+		cstr := C.CString(req.sectionId)
+		cData := C.CBytes(req.data)
+		defer C.free(unsafe.Pointer(cstr))
+		defer C.free(cData)
+
+		if req.reqType == Fixed {
+			status = int(C.ckpt_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
+		} else {
+			status = int(C.ckpt_non_fixed_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
+		}
+
+		if status == -1 && req.resend > 0 {
+			req.resend--
+			ckpt.push(req)
+		}
+	}
+}
+
 func (ckpt *CkptOps) Dispatcher() {
+
+	jobs := make(chan req, 100)
+	for w := 1; w <= 10; w++ {
+		go Worker(w, jobs, ckpt)
+	}
+
 	for {
 		select {
 		case <-ckpt.stopCh:
@@ -27,24 +53,7 @@ func (ckpt *CkptOps) Dispatcher() {
 			return
 		case req, ok := <-ckpt.q:
 			if ok {
-				var status int
-				fmt.Println("handle event from eventQ")
-				cstr := C.CString(req.sectionId)
-				cData := C.CBytes(req.data)
-				defer C.free(unsafe.Pointer(cstr))
-				defer C.free(cData)
-
-				if req.reqType == Fixed {
-					fmt.Println("Fixed")
-					status = int(C.ckpt_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
-				} else {
-					status = int(C.ckpt_non_fixed_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
-				}
-
-				if status == -1 && req.resend > 0 {
-					req.resend--
-					ckpt.push(req)
-				}
+				jobs <- req
 			}
 		}
 	}

@@ -63,6 +63,6 @@ ENV GOROOT=/usr/local/go
 ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 ENV GO111MODULE=auto
 
-COPY ./. /home/opensaf/GO-CPSV
+COPY ./. /home/opensaf/
 
-CMD ["/bin/bash"]
+CMD ["/bin/bash", "test.sh"]
