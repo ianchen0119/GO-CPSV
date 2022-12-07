@@ -128,6 +128,12 @@ func (ckpt *CkptOps) nonFixedStore(sectionId string, data []byte, size int) {
 
 // load data from ckpt
 func (ckpt *CkptOps) load(sectionId string, offset uint32, dataSize int) ([]byte, error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
 	cStr := C.CString(sectionId)
 	data := C.ckpt_read(cStr,
 		C.uint(offset), C.int(dataSize))
@@ -140,6 +146,12 @@ func (ckpt *CkptOps) load(sectionId string, offset uint32, dataSize int) ([]byte
 }
 
 func (ckpt *CkptOps) nonFixedLoad(sectionId string) ([]byte, error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
 	dataSize := 0
 	dataSizePtr := (*C.int)(unsafe.Pointer(&dataSize))
 	cStr := C.CString(sectionId)

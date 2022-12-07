@@ -14,14 +14,14 @@ import (
 func testSyncMap() {
 	var m sync.Map
 
-	start := time.Now()
+	start := time.Now().UnixNano() / int64(time.Millisecond)
 
 	for i := 0; i < 10000; i++ {
 		data, _ := json.Marshal(i)
 		m.Store(fmt.Sprintf("%d", i), data)
 	}
 
-	mid := time.Now()
+	mid := time.Now().UnixNano() / int64(time.Millisecond)
 
 	for i := 0; i < 10000; i++ {
 		if _, ok := m.Load(i); ok {
@@ -29,9 +29,9 @@ func testSyncMap() {
 		}
 	}
 
-	end := time.Now()
+	end := time.Now().UnixNano() / int64(time.Millisecond)
 
-	fmt.Println("sync.Map", "Start:", start, "Mid:", mid, "End:", end)
+	fmt.Println("sync.Map", "W:", mid-start, "R:", end-mid, "Times:", 10000)
 }
 
 func testCPSVWrite(times int) {
