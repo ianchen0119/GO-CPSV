@@ -84,9 +84,13 @@ func beforeUpdate(ctx context.Context) {
 }
 
 func main() {
+	// cpsv.Start("safCkpt=TEST2,safApp=safCkptService",
+	// 	cpsv.SetSectionNum(100000), cpsv.SetSectionSize(2000),
+	// 	cpsv.SetWorkerNum(10), cpsv.SetLifeCycleHooks(beforeUpdate, success, fail))
+
 	cpsv.Start("safCkpt=TEST2,safApp=safCkptService",
 		cpsv.SetSectionNum(100000), cpsv.SetSectionSize(2000),
-		cpsv.SetWorkerNum(10), cpsv.SetLifeCycleHooks(beforeUpdate, success, fail))
+		cpsv.SetWorkerNum(10))
 
 	testSyncMap()
 	testCPSVWrite(100)

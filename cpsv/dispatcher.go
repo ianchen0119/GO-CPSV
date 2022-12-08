@@ -23,9 +23,8 @@ func Worker(id int, jobs <-chan req, ckpt *CkptOps) {
 	for req := range jobs {
 		var status int
 		cstr := C.CString(req.sectionId)
-		cData := C.CBytes(req.data)
+		cData := (*C.uchar)(unsafe.Pointer(&req.data[0]))
 		defer C.free(unsafe.Pointer(cstr))
-		defer C.free(cData)
 
 		ctx := context.Background()
 		ckpt.beforeUpdate(context.WithValue(ctx, "req", req))
