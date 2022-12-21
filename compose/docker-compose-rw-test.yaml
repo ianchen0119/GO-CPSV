@@ -1,7 +1,16 @@
 version: '3.8'
 
 services:
-
+  db:
+    container_name: mongodb
+    image: mongo:latest
+    command: mongod --port 27017
+    volumes:
+      - dbdata:/data/db
+    networks:
+      privnet:
+        aliases:
+          - db
   SC-1:
     container_name: SC-1
     hostname: SC-1
@@ -11,6 +20,8 @@ services:
       - NET_ADMIN
     volumes:
       - ./test/rw_test.go:/home/opensaf/demo.go
+      - ./test/go.mod:/home/opensaf/go.mod
+      - ./test/go.sum:/home/opensaf/go.sum
       - ./test/setup.sh:/home/opensaf/setup.sh
       - ./sharedfs:/etc/opensaf/sharedfs
     networks:
@@ -27,3 +38,4 @@ networks:
 
 volumes:
   sharedfs:
+  dbdata:

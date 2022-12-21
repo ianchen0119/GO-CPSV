@@ -28,4 +28,3 @@ jobs:
         sleep 100
         docker-compose down
         docker-compose rm
-        
