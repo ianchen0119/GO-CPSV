@@ -7,7 +7,7 @@ import (
 )
 
 type CheckPoint struct {
-	ops *CkptOps
+	ops storageAPI
 	mu  sync.Mutex
 }
 
@@ -17,6 +17,8 @@ func SetStorageProvider(collName string, db string) {
 	switch db {
 	case "cpsv":
 		Start(collName)
+	case "mongo":
+		mongoStart(collName)
 	default:
 		fmt.Printf("%s is not supported", db)
 	}
@@ -26,6 +28,12 @@ func Start(ckptName string, ops ...func(*CkptOps)) {
 	globalCkpt.mu.Lock()
 	defer globalCkpt.mu.Unlock()
 	globalCkpt.ops = start(ckptName, ops...)
+}
+
+func mongoStart(collName string) {
+	globalCkpt.mu.Lock()
+	defer globalCkpt.mu.Unlock()
+	globalCkpt.ops = MongoStart(collName)
 }
 
 func Destroy() {

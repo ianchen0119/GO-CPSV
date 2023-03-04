@@ -29,6 +29,24 @@ services:
         aliases:
           - gocpsv.pl1.tw
 
+  SC-2:
+    container_name: SC-2
+    hostname: SC-2
+    command: bash -c "./setup.sh"
+    image: local/go-cpsv
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./test/mongo_test.go:/home/opensaf/demo.go
+      - ./test/go.mod:/home/opensaf/go.mod
+      - ./test/go.sum:/home/opensaf/go.sum
+      - ./test/setup.sh:/home/opensaf/setup.sh
+      - ./sharedfs:/etc/opensaf/sharedfs
+    networks:
+      privnet:
+        aliases:
+          - gocpsv.pl2.tw
+
 networks:
   privnet:
     ipam:

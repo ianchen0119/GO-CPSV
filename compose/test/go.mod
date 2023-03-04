@@ -7,6 +7,8 @@ require (
 	go.mongodb.org/mongo-driver v1.11.1
 )
 
+replace github.com/ianchen0119/GO-CPSV => /home/opensaf/
+
 require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
