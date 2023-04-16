@@ -21,13 +21,17 @@ import (
 
 func Worker(id int, jobs <-chan req, ckpt *CkptOps) {
 	for req := range jobs {
+		ctx := context.Background()
+		if ckpt.beforeUpdate != nil {
+			if res := ckpt.beforeUpdate(context.WithValue(ctx, "req", req)); res != 0 {
+				continue
+			}
+		}
+
 		var status int
 		cstr := C.CString(req.sectionId)
 		cData := (*C.uchar)(unsafe.Pointer(&req.data[0]))
 		defer C.free(unsafe.Pointer(cstr))
-
-		ctx := context.Background()
-		ckpt.beforeUpdate(context.WithValue(ctx, "req", req))
 
 		if req.reqType == Fixed {
 			status = int(C.ckpt_write(cstr, (*C.uchar)(cData), C.uint(req.offset), C.int(req.size)))
@@ -38,9 +42,13 @@ func Worker(id int, jobs <-chan req, ckpt *CkptOps) {
 		if status == -1 && req.resend > 0 {
 			req.resend--
 			ckpt.push(req)
-			ckpt.ifError(context.WithValue(ctx, "req", req))
+			if ckpt.ifError != nil {
+				ckpt.ifError(context.WithValue(ctx, "req", req))
+			}
 		} else {
-			ckpt.afterUpdate(context.WithValue(ctx, "req", req))
+			if ckpt.afterUpdate != nil {
+				ckpt.afterUpdate(context.WithValue(ctx, "req", req))
+			}
 		}
 	}
 }

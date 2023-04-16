@@ -46,9 +46,9 @@ type CkptOps struct {
 	resendMax    int
 	stopCh       chan struct{}
 	notifyCh     chan struct{}
-	beforeUpdate func(ctx context.Context)
-	afterUpdate  func(ctx context.Context)
-	ifError      func(ctx context.Context)
+	beforeUpdate func(ctx context.Context) interface{}
+	afterUpdate  func(ctx context.Context) interface{}
+	ifError      func(ctx context.Context) interface{}
 }
 
 type Option func(*CkptOps)
@@ -70,7 +70,7 @@ func GetResult(ctx context.Context) (*Result, error) {
 	return res, nil
 }
 
-func SetLifeCycleHooks(beforeUpdate, afterUpdate, ifError func(ctx context.Context)) Option {
+func SetLifeCycleHooks(beforeUpdate, afterUpdate, ifError func(ctx context.Context) interface{}) Option {
 	return func(ckpt *CkptOps) {
 		ckpt.beforeUpdate = beforeUpdate
 		ckpt.afterUpdate = afterUpdate
@@ -107,7 +107,8 @@ func start(ckptName string, ops ...func(*CkptOps)) *CkptOps {
 	cStr := C.CString(ckptName)
 	defer C.free(unsafe.Pointer(cStr))
 
-	defaultFunc := func(ctx context.Context) {
+	defaultFunc := func(ctx context.Context) interface{} {
+		return 0
 	}
 
 	cpsv := &CkptOps{
