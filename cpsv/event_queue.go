@@ -1,7 +1,7 @@
 package cpsv
 
-func eventQInit() chan req {
-	return make(chan req, 100)
+func eventQInit(num int) chan req {
+	return make(chan req, num)
 }
 
 func (ckpt *CkptOps) push(req req) {

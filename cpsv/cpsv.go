@@ -40,6 +40,7 @@ var _ storageAPI = (*CkptOps)(nil)
 type CkptOps struct {
 	startTime    time.Time
 	q            chan req
+	qlength      int
 	sectionNum   int
 	suctionSize  int
 	workerNum    int
@@ -78,6 +79,12 @@ func SetLifeCycleHooks(beforeUpdate, afterUpdate, ifError func(ctx context.Conte
 	}
 }
 
+func SetQueueLength(length int) Option {
+	return func(ckpt *CkptOps) {
+		ckpt.qlength = length
+	}
+}
+
 func SetResendMax(max int) Option {
 	return func(ckpt *CkptOps) {
 		ckpt.resendMax = max
@@ -113,7 +120,7 @@ func start(ckptName string, ops ...func(*CkptOps)) *CkptOps {
 
 	cpsv := &CkptOps{
 		startTime:    time.Now(),
-		q:            eventQInit(),
+		qlength:      100,
 		sectionNum:   100000,
 		suctionSize:  20000,
 		stopCh:       make(chan struct{}),
@@ -127,6 +134,8 @@ func start(ckptName string, ops ...func(*CkptOps)) *CkptOps {
 	for _, op := range ops {
 		op(cpsv)
 	}
+
+	cpsv.q = make(chan req, cpsv.qlength)
 
 	C.ckpt_init_with_section(cStr, C.int(cpsv.sectionNum), C.int(cpsv.suctionSize))
 
